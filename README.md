@@ -119,7 +119,7 @@ npx --yes github:cinatra-ai/claude-plugin --claude --global --dry-run \
 |---|---|---|
 | `setup` | Bootstrap a fresh contributor machine: missing toolchain + global Claude baseline. Dry-run by default; writes only on `--apply`. | `"set up my machine"` |
 | `onboarding` | Walk a new contributor from nothing installed to a first shipped change. | `"how do I start contributing"` |
-| `cinatra-dev-env` | Bring up or refresh the local Cinatra dev / verify stack. | `"bring up the cinatra dev environment"` |
+| `cinatra-dev-tools` | Bring up or refresh the local Cinatra dev / verify stack. | `"bring up the cinatra dev environment"` |
 | `extension-conventions` | Conventions for authoring, pinning, and integrating a Cinatra extension. | `"extension repo conventions"` |
 | `domain-gotchas` | Per-repo domain traps that have cost real rework (design conformance, release CI, schema fixtures, etc.). | `"domain gotchas"` |
 
@@ -263,7 +263,7 @@ Then re-run the installer.
 
 A stray published-marker artifact in the tree can break a pinned sync. Clean
 strays before trusting a refresh. See the
-[`cinatra-dev-env` skill](./skills/cinatra-dev-env/SKILL.md) for the full
+[`cinatra-dev-tools` skill](./skills/cinatra-dev-tools/SKILL.md) for the full
 recipe.
 
 ---
