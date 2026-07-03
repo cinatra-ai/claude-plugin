@@ -113,19 +113,46 @@ npx --yes github:cinatra-ai/claude-plugin --claude --global --dry-run \
 
 ---
 
-## Skills
+## Commands / usage
 
-| Skill | What it does | Example trigger |
+This plugin has **two** kinds of user-invocable surface: the skills (invoked
+by typing `/<skill-name>` in a Claude Code session) and the `dev-tools` CLI
+(shelled out to by the skills, not a slash command, but runnable directly).
+There is no separate `commands/*.md` directory — the skills under
+[`skills/`](./skills/) **are** the slash surface.
+
+### A. Slash-invocable skills
+
+Each skill also activates on its natural-language trigger phrases (not just
+the slash form) — see the `triggers:` list in each skill's frontmatter.
+
+| Invoke | Purpose | When to use |
 |---|---|---|
-| `setup` | Bootstrap a fresh contributor machine: missing toolchain + global Claude baseline. Dry-run by default; writes only on `--apply`. | `"set up my machine"` |
-| `onboarding` | Walk a new contributor from nothing installed to a first shipped change. | `"how do I start contributing"` |
-| `cinatra-dev-tools` | Bring up or refresh the local Cinatra dev / verify stack. | `"bring up the cinatra dev environment"` |
-| `extension-conventions` | Conventions for authoring, pinning, and integrating a Cinatra extension. | `"extension repo conventions"` |
-| `domain-gotchas` | Per-repo domain traps that have cost real rework (design conformance, release CI, schema fixtures, etc.). | `"domain gotchas"` |
+| `/setup` | Bootstrap a fresh contributor machine: install the missing toolchain (VS Code + the Claude Code extension, Codex CLI, gh, node/pnpm, Docker, git, GSD) and configure the global Claude baseline. Dry-run by default; writes only on `--apply`. | First thing on a new machine, or to check/repair your toolchain and global Claude config. |
+| `/onboarding` | Walk a new contributor from "nothing installed" to "working on a first issue": install this pack, run `setup`, get oriented, then find and start a first piece of work. | You're new to the Cinatra dev process and want the ordered how-to path. |
+| `/cinatra-dev-tools` | Bring up or refresh the local Cinatra dev/verify stack (dedicated db/redis ports, `.env.local` template, per-worktree dev port + queue) and explain the dev extension locks and the LLM-call credential principle. | You need to run or test something against a local Cinatra stack, or need the local LLM-credential rules. |
+| `/extension-conventions` | Conventions for authoring, pinning, and integrating a Cinatra extension: one repo per extension, the five kinds (agent/connector/artifact/skill/workflow), `create-cinatra-extension`, the `package.json#cinatra` manifest shape, the lock-pin choreography. | You're building or integrating a Cinatra extension. |
+| `/domain-gotchas` | Per-repo domain traps that have cost real rework: design-repo asset/spec conformance, reusable release CI, schema-migration fixture re-apply, Next.js cold-compile staleness, browser-URL vs container-URL, CodeQL false-positive dismissal, the docs-repo convention, real-host CLI testing, and more. | Before touching a repo with a known non-obvious trap, or when something behaves unexpectedly in a way that looks environmental. |
 
-Trigger phrases are matched by Claude Code. See each skill file under
-[`skills/`](./skills/) (`skills/<name>/SKILL.md`) for the full trigger list and
-workflow body.
+See each skill file under [`skills/`](./skills/) (`skills/<name>/SKILL.md`) for
+the full trigger list and workflow body.
+
+### B. `dev-tools` CLI subcommands
+
+The skills above shell out to a deterministic CLI engine at
+`$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs` (source of truth: the `switch` in
+[`bin/dev-tools.cjs`](./bin/dev-tools.cjs)) so operations like model
+resolution or an environment probe are never an LLM free-choice. It is not a
+slash command — run it directly with Node.
+
+| Subcommand | Purpose | Args | Example |
+|---|---|---|---|
+| `route` | Resolve which model to use for a task class or a dispatching skill. | `--class <c> \| --skill <id>` `[--runtime r]` `[--json]` | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs route --class <c> --json` |
+| `update-context` | Print the installed package, version, resolved payload directory, and runtime. | `[--runtime r]` `[--json]` | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs update-context --json` |
+| `doctor` | READ-ONLY toolchain/currency/global-settings probe; exits 1 on any FAIL. | `[--json]` | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs doctor` |
+| `global-settings-diff` | READ-ONLY exact diff of the machine-global Claude baseline; exits 1 if drifted. | `[--json]` | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs global-settings-diff` |
+| `shadcn-install` | Install the pinned upstream shadcn skill for both Claude and Codex. Refuses the real `~/.codex` without `--force`. | `[--home d]` `[--codex-home d]` `[--force]` `[--json]` | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs shadcn-install --home <sandbox> --json` |
+| `version` | Print the installed pack version. | — | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs version` |
 
 ---
 
