@@ -1,6 +1,6 @@
 ---
-name: cinatra-dev-env
-description: "Bring up or refresh the Cinatra LOCAL dev / verify stack and explain the dev extension locks and the LLM-call credential principle. Covers the reusable verify-stack recipe (dedicated db/redis ports + an .env.local template + a per-worktree dev port and queue name) and the common pitfall where a stray published-marker artifact breaks a pinned sync. Activates for: 'run cinatra locally', 'bring up the cinatra dev environment', 'spin up the verify stack', 'make LLM calls locally', 'the dev extension locks'. Credentials resolve from the environment and stay in memory — the skill never surfaces or writes a secret value."
+name: cinatra-dev-tools
+description: "Bring up or refresh the Cinatra LOCAL dev / verify stack and explain the dev extension locks and the LLM-call credential principle. Covers the reusable verify-stack recipe (dedicated db/redis ports + an .env.local template + a per-worktree dev port and queue name) and the common pitfall where a stray published-marker artifact breaks a pinned sync. Activates for: 'run cinatra locally', 'bring up the cinatra dev environment', 'spin up the verify stack', 'make LLM calls locally', 'the dev extension locks'. Credentials resolve from the environment and stay in memory — the skill never surfaces or writes a secret value. Distinct from the `dev-tools` CLI engine (`bin/dev-tools.cjs`): this skill is the natural-language workflow; the CLI is the deterministic engine the skills in this pack shell out to."
 argument-hint: "[--up | --refresh]"
 allowed-tools:
   - Read
@@ -38,11 +38,17 @@ and in-memory only — never surface or write a secret value.
    and NEVER written into a skill, log, or commit.
 </process>
 
-# Workflow: cinatra-dev-env
+# Workflow: cinatra-dev-tools
 
-> Engine body for the `cinatra-dev-env` skill. Bring up / refresh the local
+> Engine body for the `cinatra-dev-tools` skill. Bring up / refresh the local
 > dev + verify stack; explain the dev extension locks and the LLM-call credential
 > principle.
+>
+> **Not the `dev-tools` CLI.** This skill (`cinatra-dev-tools`, the
+> natural-language workflow) is a different thing from the `dev-tools` CLI
+> engine at `bin/dev-tools.cjs` (a deterministic script the skills in this pack
+> shell out to). Both carry the `dev-tools` token by design — the skill is what
+> you *talk to*; the CLI is what the skills *invoke*.
 
 > Evidence rule (what counts as proof): drive the real surface (never a stub),
 > only trust a CONCLUDED check, bind a verdict to the exact commit SHA, capture

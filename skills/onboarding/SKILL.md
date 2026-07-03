@@ -1,6 +1,6 @@
 ---
 name: onboarding
-description: "Walk a new contributor through the actionable path into the Cinatra dev process: install this skills pack, run the setup skill, get oriented, and find a first piece of work to pick up. Activates for: 'install the dev skills pack', 'set up the dev pack', 'onboard to the dev workflow', 'how do I start contributing', 'find my first issue', 'find work to pick up', 'new to the cinatra dev process', or 'get oriented to start work'. This is the HOW-TO path; it cross-links the other skills in this pack (setup, cinatra-dev-env, extension-conventions, domain-gotchas)."
+description: "Walk a new contributor through the actionable path into the Cinatra dev process: install this skills pack, run the setup skill, get oriented, and find a first piece of work to pick up. Activates for: 'install the dev skills pack', 'set up the dev pack', 'onboard to the dev workflow', 'how do I start contributing', 'find my first issue', 'find work to pick up', 'new to the cinatra dev process', or 'get oriented to start work'. This is the HOW-TO path; it cross-links the other skills in this pack (setup, cinatra-dev-tools, extension-conventions, domain-gotchas)."
 argument-hint: ""
 allowed-tools:
   - Read
@@ -56,7 +56,7 @@ ordered moves. Run them in sequence.
    parent folder so the tools and skills find them. Keep each repo in its own
    directory; clone only repos you have access to.
 3. **Get oriented.** Skim the README of the repo you'll work in and the open
-   issues on its board. Use `cinatra-dev-env` to bring up the local dev / verify
+   issues on its board. Use `cinatra-dev-tools` to bring up the local dev / verify
    stack when you need to run or test something locally.
 4. **Find work and start it.** Pick a READY item off the board (using the shared
    Status vocabulary above), then take that one issue from a grounded start

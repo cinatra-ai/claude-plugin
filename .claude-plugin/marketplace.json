@@ -12,7 +12,7 @@
       "name": "cinatra-foundation",
       "version": "0.1.0",
       "source": ".",
-      "description": "The 5 shared environment skills (setup, onboarding, cinatra-dev-env, extension-conventions, domain-gotchas) and the dev-tools CLI engine."
+      "description": "The 5 shared environment skills (setup, onboarding, cinatra-dev-tools, extension-conventions, domain-gotchas) and the dev-tools CLI engine."
     }
   ]
 }
