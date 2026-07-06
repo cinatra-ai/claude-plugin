@@ -5,14 +5,14 @@
     "email": "sandro@cinatra.ai"
   },
   "metadata": {
-    "description": "Cinatra public foundation Claude Code plugin (Apache-2.0). The single authoritative home of the shared environment skills and the extension-development pack. Tracks the main branch; updates are MANUAL (run `claude plugin marketplace update` + `claude plugin update`)."
+    "description": "Cinatra public foundation Claude Code plugin (Apache-2.0). The single authoritative home of the 5 shared environment skills. Tracks the main branch; updates are MANUAL (run `claude plugin marketplace update` + `claude plugin update`)."
   },
   "plugins": [
     {
       "name": "cinatra-foundation",
       "version": "0.1.0",
       "source": ".",
-      "description": "The shared environment skills (setup, onboarding, cinatra-dev-tools, extension-conventions, domain-gotchas), the extension-development pack (extension-authoring, connector/agent/artifact/skill specialists, extension-boundary, two extension slash commands), and the dev-tools CLI engine."
+      "description": "The 5 shared environment skills (setup, onboarding, cinatra-dev-tools, extension-conventions, domain-gotchas) and the dev-tools CLI engine."
     }
   ]
 }

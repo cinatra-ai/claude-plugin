@@ -15,10 +15,6 @@ or with Cinatra. The skills cover:
 - **New-contributor orientation** — find your first issue and follow the
   standard issue → PR → merge flow.
 - **Local dev/verify stack** — bring up the local Cinatra stack for testing.
-- **Extension development** — scaffold, author, validate, and audit a Cinatra
-  extension end to end: a core lifecycle skill, one specialist skill per active
-  extension kind (agent, connector, artifact, skill), the extension ↔ core
-  boundary doctrine, and two slash commands that drive them.
 - **Extension authoring conventions** — the rules for building, pinning, and
   integrating a Cinatra extension.
 - **Domain gotchas** — per-repo traps that have cost real rework.
@@ -59,10 +55,9 @@ claude plugin install cinatra-foundation@cinatra-foundation
 (Use the `https://github.com/cinatra-ai/claude-plugin.git` URL instead of the SSH one if
 you clone over HTTPS.)
 
-Claude Code stages the skills from `skills/<name>/SKILL.md`, the slash commands
-from `commands/*.md`, and resolves the bundled `dev-tools` CLI engine at
-`$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs`. The skills then activate on their
-natural-language triggers.
+Claude Code stages the five skills from `skills/<name>/SKILL.md` and resolves the
+bundled `dev-tools` CLI engine at `$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs`. The
+skills then activate on their natural-language triggers.
 
 **Updates are manual** (the native plugin update model — no self-updater):
 
@@ -120,24 +115,13 @@ npx --yes github:cinatra-ai/claude-plugin --claude --global --dry-run \
 
 ## Commands / usage
 
-This plugin has **three** kinds of user-invocable surface: the slash commands
-under [`commands/`](./commands/) (manual-only orchestrators), the skills
-(invoked by typing `/<skill-name>` in a Claude Code session, or auto-activated
-by their trigger phrases), and the `dev-tools` CLI (shelled out to by the
-skills, not a slash command, but runnable directly).
+This plugin has **two** kinds of user-invocable surface: the skills (invoked
+by typing `/<skill-name>` in a Claude Code session) and the `dev-tools` CLI
+(shelled out to by the skills, not a slash command, but runnable directly).
+There is no separate `commands/*.md` directory — the skills under
+[`skills/`](./skills/) **are** the slash surface.
 
-### A. Slash commands
-
-Commands are manual-only (`disable-model-invocation: true`) thin orchestrators —
-the procedure lives in the skills they drive. They ship via the native plugin
-install (Option A); the transitional `npx` installer stages skills only.
-
-| Invoke | Purpose |
-|---|---|
-| `/cinatra-extension-new` | Guided scaffold of a new Cinatra extension: collects missing inputs (kind, name, description, scope where allowed; connector access scope, UI surface, migrations), drives `cinatra create-extension` non-interactively, writes the mandatory connector `cinatra/config.json`, validates, then hands payload authoring to the kind specialist skill. |
-| `/cinatra-extension-verify` | Conformance + boundary audit of an existing extension repo: kind gate, packlist dry-run, first-class connector scope-config audit, the `extension-boundary` sweep, the kind specialist checklist, and a report-only release-readiness section. |
-
-### B. Slash-invocable skills
+### A. Slash-invocable skills
 
 Each skill also activates on its natural-language trigger phrases (not just
 the slash form) — see the `triggers:` list in each skill's frontmatter.
@@ -147,19 +131,13 @@ the slash form) — see the `triggers:` list in each skill's frontmatter.
 | `/setup` | Bootstrap a fresh contributor machine: install the missing toolchain (VS Code + the Claude Code extension, Codex CLI, gh, node/pnpm, Docker, git, GSD) and configure the global Claude baseline. Dry-run by default; writes only on `--apply`. | First thing on a new machine, or to check/repair your toolchain and global Claude config. |
 | `/onboarding` | Walk a new contributor from "nothing installed" to "working on a first issue": install this pack, run `setup`, get oriented, then find and start a first piece of work. | You're new to the Cinatra dev process and want the ordered how-to path. |
 | `/cinatra-dev-tools` | Bring up or refresh the local Cinatra dev/verify stack (dedicated db/redis ports, `.env.local` template, per-worktree dev port + queue) and explain the dev extension locks and the LLM-call credential principle. | You need to run or test something against a local Cinatra stack, or need the local LLM-credential rules. |
-| `/extension-conventions` | Conventions for authoring, pinning, and integrating a Cinatra extension: one repo per extension, the five kinds (workflow scheduled for removal, cinatra#1030), `cinatra create-extension`, the `package.json#cinatra` manifest shape per kind, the mandatory connector `cinatra/config.json` access declaration, the lock-pin choreography. | You're building or integrating a Cinatra extension and need the cross-kind conventions. |
-| `/extension-authoring` | The extension development lifecycle: discover (reuse-before-new), collect scaffold inputs (asking for anything missing), scaffold with the published `cinatra` CLI, route payload authoring to the kind specialist, validate after every change, PR/CI, release-readiness handoff (never releases). | You're creating or developing a Cinatra extension end to end. |
-| `/connector-authoring` | Connector specialist: the mandatory `cinatra/config.json` access scope (lowercase tokens, `default` XOR `only`, protected slugs), UI surfaces (`schema-config` vs `bundled-react`), registration-only `register(ctx)` with type-only SDK imports, least-privilege host ports, the migrations decision, current fleet archetypes. | You're authoring or reviewing a Cinatra connector. |
-| `/agent-authoring` | Agent specialist: the three-file package (OpenAgentSpec flow, system-prompt SKILL.md, manifest), the type decision table, declarative HITL, orchestrator composition, the 8 cross-cutting OAS rules, llm-bridge and object-envelope runtime contracts, dual version bump. | You're authoring or reviewing a Cinatra agent extension. |
-| `/artifact-authoring` | Artifact specialist: metadata-only content-TYPE definition, the strict manifest key allowlist, the full `cinatra.artifact` descriptor contract, the typed mirror, and the paired matcher skill with confidence bands. | You're authoring or reviewing a Cinatra artifact extension. |
-| `/skill-extension-authoring` | Skill-bundle specialist: `skills/<name>/SKILL.md` payload (one dir per capability), the `cinatra.capabilities` map (host-enforced), `metadata.match_when` agent binding, `-skills` naming and the vendored-scope policy. NOT for Claude Code plugin skills. | You're authoring or reviewing a Cinatra product skill bundle. |
-| `/extension-boundary` | The extension ↔ core boundary: every gate-enforced rule (import bans, type-only SDK peers, optional-peer discipline, pinned-empty core coupling baselines, the lock equality invariant, the SDK surface fence) with its enforcing gate and the local reproduction commands. | Your extension change touches anything that crosses (or must not cross) the host boundary, or a boundary gate went red. |
+| `/extension-conventions` | Conventions for authoring, pinning, and integrating a Cinatra extension: one repo per extension, the five kinds (agent/connector/artifact/skill/workflow), `create-cinatra-extension`, the `package.json#cinatra` manifest shape, the lock-pin choreography. | You're building or integrating a Cinatra extension. |
 | `/domain-gotchas` | Per-repo domain traps that have cost real rework: design-repo asset/spec conformance, reusable release CI, schema-migration fixture re-apply, Next.js cold-compile staleness, browser-URL vs container-URL, CodeQL false-positive dismissal, the docs-repo convention, real-host CLI testing, and more. | Before touching a repo with a known non-obvious trap, or when something behaves unexpectedly in a way that looks environmental. |
 
 See each skill file under [`skills/`](./skills/) (`skills/<name>/SKILL.md`) for
 the full trigger list and workflow body.
 
-### C. `dev-tools` CLI subcommands
+### B. `dev-tools` CLI subcommands
 
 The skills above shell out to a deterministic CLI engine at
 `$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs` (source of truth: the `switch` in
