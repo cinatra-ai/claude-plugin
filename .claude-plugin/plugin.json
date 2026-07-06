@@ -1,7 +1,7 @@
 {
   "name": "cinatra-foundation",
   "version": "0.1.0",
-  "description": "Cinatra public foundation Claude Code plugin — the 5 shared environment skills (setup, onboarding, cinatra-dev-tools, extension-conventions, domain-gotchas) plus the deterministic dev-tools CLI engine they shell out to. Install once; skills activate on natural-language triggers. Apache-2.0.",
+  "description": "Cinatra public foundation Claude Code plugin — the shared environment skills (setup, onboarding, cinatra-dev-tools, extension-conventions, domain-gotchas), the extension-development pack (extension-authoring lifecycle, per-kind specialists, extension-boundary doctrine, and the /cinatra-extension-new + /cinatra-extension-verify commands), plus the deterministic dev-tools CLI engine. Install once; skills activate on natural-language triggers. Apache-2.0.",
   "author": {
     "name": "Cinatra",
     "email": "sandro@cinatra.ai"
