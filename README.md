@@ -59,11 +59,19 @@ Claude Code stages the five skills from `skills/<name>/SKILL.md` and resolves th
 bundled `dev-tools` CLI engine at `$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs`. The
 skills then activate on their natural-language triggers.
 
-**Updates are manual** (the native plugin update model — no self-updater):
+**Updates use the native plugin update model** (no self-updater). Manually:
 
 ```sh
 claude plugin marketplace update   # refresh the marketplace from main
 claude plugin update cinatra-foundation
+```
+
+Or let the bundled engine check and apply per-plugin updates for the installed
+Cinatra-family plugins (see the [`plugin-update` subcommand](#b-dev-tools-cli-subcommands)):
+
+```sh
+node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs plugin-update --check   # read-only report
+node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs plugin-update           # apply per the mode knob
 ```
 
 ### Option B — `npx` installer (transitional)
@@ -149,7 +157,8 @@ slash command — run it directly with Node.
 |---|---|---|---|
 | `route` | Resolve which model to use for a task class or a dispatching skill. | `--class <c> \| --skill <id>` `[--runtime r]` `[--json]` | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs route --class <c> --json` |
 | `update-context` | Print the installed package, version, resolved payload directory, and runtime. | `[--runtime r]` `[--json]` | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs update-context --json` |
-| `doctor` | READ-ONLY toolchain/currency/global-settings probe; exits 1 on any FAIL. | `[--json]` | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs doctor` |
+| `doctor` | READ-ONLY toolchain/currency/global-settings probe; exits 1 on any FAIL. `--online` opts in to the read-only plugin currency probe (installed → available for the runtime-discovered Cinatra-family plugins). | `[--online]` `[--json]` | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs doctor --online` |
+| `plugin-update` | Check and (per the `currency.plugin` mode knob, default `auto`) apply **per-plugin** updates for the **installed** first-party Cinatra-family plugins, discovered at runtime via the plugin registry (marketplace-source owner or the `x-cinatra-dev-tools.update` manifest opt-in marker). Never installs a new plugin; every not-possible case degrades to a visible notify + the exact manual command. | `[--check]` `[--apply]` `[--notify-only]` `[--json]` | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs plugin-update --check` |
 | `global-settings-diff` | READ-ONLY exact diff of the machine-global Claude baseline; exits 1 if drifted. | `[--json]` | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs global-settings-diff` |
 | `shadcn-install` | Install the pinned upstream shadcn skill for both Claude and Codex. Refuses the real `~/.codex` without `--force`. | `[--home d]` `[--codex-home d]` `[--force]` `[--json]` | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs shadcn-install --home <sandbox> --json` |
 | `version` | Print the installed pack version. | — | `node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs version` |
@@ -238,12 +247,29 @@ old git-based version check has been retired.
 2. Merge the bump to `main`. The marketplace tracks `main`, so the new version
    is published as soon as the bump lands.
 
-**To update an installed copy** (manual, by design):
+**To update an installed copy** — manually:
 
 ```sh
 claude plugin marketplace update   # refresh the marketplace from main
 claude plugin update cinatra-foundation
 ```
+
+or via the bundled engine, which discovers the installed Cinatra-family
+plugins at runtime and runs the same native commands per plugin:
+
+```sh
+node $CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs plugin-update
+```
+
+The `doctor` probe itself stays read-only: `doctor --online` reports
+installed → available versions but never refreshes marketplace metadata or
+applies anything — that is `plugin-update`'s job. The apply behaviour is
+governed by the `currency.plugin` knob in `.cinatra-dev/config.json`
+(`auto`, the default — apply eligible updates when possible — or
+`notify-only`), and auto-apply is limited to updates of already-installed
+first-party plugins: nothing new is ever installed, and an update that would
+add hooks/MCP servers/permissions degrades to a visible notify for explicit
+consent.
 
 ---
 

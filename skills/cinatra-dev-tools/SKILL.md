@@ -1,7 +1,7 @@
 ---
 name: cinatra-dev-tools
 description: "Bring up or refresh the Cinatra LOCAL dev / verify stack and explain the dev extension locks and the LLM-call credential principle. Covers the reusable verify-stack recipe (dedicated db/redis ports + an .env.local template + a per-worktree dev port and queue name) and the common pitfall where a stray published-marker artifact breaks a pinned sync. Activates for: 'run cinatra locally', 'bring up the cinatra dev environment', 'spin up the verify stack', 'make LLM calls locally', 'the dev extension locks'. Credentials resolve from the environment and stay in memory — the skill never surfaces or writes a secret value. Distinct from the `dev-tools` CLI engine (`bin/dev-tools.cjs`): this skill is the natural-language workflow; the CLI is the deterministic engine the skills in this pack shell out to."
-argument-hint: "[--up | --refresh]"
+argument-hint: "[--up | --refresh | update [--check | --apply | --notify-only]]"
 allowed-tools:
   - Read
   - Bash
@@ -36,6 +36,17 @@ and in-memory only — never surface or write a secret value.
 3. Credential principle for LLM calls: keys resolve ENV-FIRST and stay RAM-only; a
    key value is NEVER passed as a CLI subcommand argument (that would expose it)
    and NEVER written into a skill, log, or commit.
+4. `update` — keep the installed Cinatra-family Claude Code plugins current via
+   the deterministic engine (never hand-roll the update):
+
+   ```sh
+   node "$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs" plugin-update            # per the mode knob (default: auto)
+   node "$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs" plugin-update --check    # read-only report
+   node "$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs" plugin-update --apply    # apply on demand
+   ```
+
+   Relay every NOTE line verbatim (each carries the reason + the exact manual
+   command) — never silently skip one.
 </process>
 
 # Workflow: cinatra-dev-tools
@@ -79,6 +90,37 @@ pinned sync — clean strays before trusting a refresh.
 - A key value is **NEVER** passed as a CLI subcommand argument (that would expose
   it), and **NEVER** written into a skill, a log, or a commit.
 - No secret value appears in this pack, ever.
+
+## Plugin updates (`update`)
+
+Keeping the installed Cinatra-family Claude Code plugins current is engine
+work — shell out to `dev-tools.cjs plugin-update`; never improvise
+`claude plugin ...` sequences yourself.
+
+- **Discovery is runtime + generic.** The engine enumerates the *installed*
+  plugins from the local plugin registry (falling back to
+  `claude plugin list --json`) and filters to the Cinatra family by public
+  metadata (the marketplace source's owner) or the manifest opt-in marker
+  `"x-cinatra-dev-tools": { "update": true }`. No plugin name is hardcoded.
+- **`doctor` stays read-only.** The doctor currency probe reports installed →
+  available only; `doctor --online` opts in to the bounded read-only network
+  check. Refreshing marketplace metadata and applying updates happen only in
+  the explicit `plugin-update` step.
+- **Mode knob** (`currency.plugin` in `.cinatra-dev/config.json`): `auto`
+  (default — apply eligible updates when possible) or `notify-only` (report +
+  the manual command, never apply). `--apply` / `--notify-only` override per
+  run; `--check` is always read-only.
+- **Consent boundary:** auto-apply covers **updates to already-installed
+  first-party plugins only**. Installing a NEW/missing tool always asks first
+  (the pack's consent doctrine, claude-plugin#16) — `plugin-update` never
+  installs anything new. An update that would add hooks, MCP servers, or
+  permissions is never auto-applied; it degrades to a notify for explicit
+  consent.
+- **No silent skips.** Every "not possible" case (offline/auth/marketplace
+  missing/CLI too old/no source metadata/pinned/editable checkout/conflict/
+  read-only fs/capability expansion/version undeterminable) is a visible
+  NOTE with the exact manual command, e.g.
+  `claude plugin marketplace update <marketplace> && claude plugin update <plugin>@<marketplace>`.
 
 ## Remote / hosted ingress
 
