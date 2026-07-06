@@ -12,7 +12,12 @@
 //   route --class <c> [--runtime r] [--json]      resolve model for a task class
 //   route --skill <id> [--runtime r] [--json]     resolve model for a dispatching skill
 //   update-context [--json]                       installed version + payload dir
-//   doctor [--json]                               READ-ONLY toolchain/env probe (#129)
+//   doctor [--online] [--json]                    READ-ONLY toolchain/env probe (#129);
+//                                                 --online adds the read-only plugin
+//                                                 currency probe (installed vs available)
+//   plugin-update [--check|--apply|--notify-only] check + (per the mode knob) apply
+//                 [--json]                        per-plugin updates for installed
+//                                                 first-party Cinatra-family plugins
 //   global-settings-diff [--json]                 READ-ONLY global-baseline drift (#129)
 //   shadcn-install [--home d] [--codex-home d]    install upstream shadcn for
 //                  [--force] [--json]             BOTH Claude AND Codex (#191)
@@ -143,12 +148,20 @@ function cmdDoctor(argv) {
   const sum = doctor.summarize(checks);
   const currencyKnob = resolveCurrencyKnob();
   const currency = doctor.currencyStatus(currencyKnob, { online: false });
+  // Plugin currency: offline (unknown + exact commands) by default; `--online`
+  // opts in to the bounded READ-ONLY probe (registry + cached metadata +
+  // ls-remote). Doctor NEVER writes either way — refresh/apply is the separate
+  // explicit `plugin-update` subcommand.
+  const pluginUpdates = require("./lib/plugin-updates.cjs");
+  const pluginMode = pluginUpdates.resolveUpdateMode(process.cwd());
+  const pluginCurrency = doctor.pluginCurrencyStatus(pluginMode, { online: Boolean(flags.online) });
   const report = {
     package: `@cinatra-ai/${NAMESPACE}`,
     version: readVersion(),
     summary: sum,
     checks,
     currency,
+    pluginCurrency,
     globalSettings: { anyDrift: settings.anyDrift, attribution: settings.attribution, items: settings.items },
   };
   if (flags.json) { emit(report, true); }
@@ -161,6 +174,13 @@ function cmdDoctor(argv) {
     }
     lines.push("", `Toolchain currency (${currency.mode}): ${currency.status} — ${currency.detail}`);
     if (currency.command) lines.push(`        check: ${currency.command}`);
+    lines.push("", `Plugin currency (${pluginCurrency.mode}): ${pluginCurrency.status} — ${pluginCurrency.detail}`);
+    if (pluginCurrency.command) lines.push(`        check: ${pluginCurrency.command}`);
+    for (const p of pluginCurrency.plugins || []) {
+      const mark = p.state === "current" ? "OK  " : "WARN";
+      lines.push(`[${mark}] plugin ${p.id}: ${p.state}${p.reason ? ` — ${p.reason}` : ""}`);
+      if (p.state !== "current") lines.push(`        manual: ${p.manualCommand}`);
+    }
     lines.push("", "Global Claude baseline:", gsb.renderDiff(settings));
     lines.push("", `summary: ${sum.counts.ok} ok / ${sum.counts.warn} warn / ${sum.counts.fail} fail`);
     emit(lines.join("\n"), false);
@@ -210,17 +230,81 @@ function cmdShadcnInstall(argv) {
   }
 }
 
+// plugin-update — the EXPLICIT plugin refresh/apply step (kept OUT of doctor's
+// read-only default path). Flow: read-only check (registry + cached metadata +
+// ls-remote) -> per the mode, apply PER-PLUGIN updates via the native CLI
+// (`claude plugin marketplace update <name>` then `claude plugin update
+// <plugin>@<marketplace>` — never a broad untargeted update).
+//
+// Modes:
+//   --check        read-only report only (never applies)
+//   --apply        apply eligible updates now (explicit on-demand consent)
+//   --notify-only  report + manual commands, never apply
+//   (none)         the `currency.plugin` knob decides: "auto" (default —
+//                  apply when possible) or "notify-only"
+//
+// Scope: UPDATES to already-installed first-party plugins only. This command
+// never installs a NEW plugin — installing anything new stays a separate,
+// ask-first consented action (the pack's consent doctrine). Every "not
+// possible" case degrades to a visible notify + the exact manual command.
+function cmdPluginUpdate(argv) {
+  const flags = parseFlags(argv);
+  const pluginUpdates = require("./lib/plugin-updates.cjs");
+  const check = pluginUpdates.checkUpdates({ network: true });
+  const knob = pluginUpdates.resolveUpdateMode(process.cwd());
+  const mode = flags.apply ? "auto" : flags["notify-only"] ? "notify-only" : knob;
+  if (flags.check) {
+    if (flags.json) emit({ mode, knob, checkOnly: true, ...check }, true);
+    else {
+      // human report: same NOTE + manual-command rendering as the apply path —
+      // a top-level discovery failure must surface its manual fallback here too.
+      const lines = [`plugin-update --check (read-only; knob: ${knob})`, ""];
+      for (const p of check.plugins) {
+        const mark = p.state === "current" ? "OK  " : "NOTE";
+        lines.push(`[${mark}] ${p.id}: ${p.state}${p.reason ? ` — ${p.reason}` : ""}`);
+        if (p.state !== "current") lines.push(`        manual: ${p.manualCommand}`);
+      }
+      if (check.error) {
+        lines.push("", `NOTE: ${check.error}`);
+        lines.push(`        manual: ${pluginUpdates.manualCommand()}`);
+      }
+      if (!check.plugins.length && !check.error) lines.push("no installed first-party plugins discovered");
+      emit(lines.join("\n"), false);
+    }
+    process.exit(check.error ? 1 : 0);
+  }
+  const applied = pluginUpdates.applyUpdates(check, { mode });
+  const report = { knob, ...applied, source: check.source, error: check.error };
+  if (flags.json) emit(report, true);
+  else {
+    const lines = [`plugin-update (mode: ${applied.mode}, knob: ${knob})`, ""];
+    for (const r of applied.results) {
+      lines.push(`[${r.action === "updated" ? "OK  " : r.action === "none" ? "OK  " : "NOTE"}] ${r.id}: ${r.detail}`);
+      if (r.manualCommand) lines.push(`        manual: ${r.manualCommand}`);
+    }
+    if (check.error) {
+      lines.push("", `NOTE: ${check.error}`);
+      lines.push(`        manual: ${pluginUpdates.manualCommand()}`);
+    }
+    if (!applied.results.length) lines.push("no installed first-party plugins discovered (nothing to do)");
+    emit(lines.join("\n"), false);
+  }
+  const failedApply = applied.results.some((r) => r.action === "notify" && /failed/.test(r.detail));
+  process.exit(check.error || failedApply ? 1 : 0);
+}
+
 function main() {
   const [, , sub, ...rest] = process.argv;
   switch (sub) {
     case "route": return cmdRoute(rest);
     case "update-context": return cmdUpdateContext(rest);
     case "doctor": return cmdDoctor(rest);
+    case "plugin-update": return cmdPluginUpdate(rest);
     case "global-settings-diff": return cmdGlobalSettingsDiff(rest);
     case "shadcn-install": return cmdShadcnInstall(rest);
     case "version": return emit(readVersion(), false);
     default:
-      console.error("dev-tools: unknown subcommand. Use: route | update-context | doctor | global-settings-diff | shadcn-install | version");
+      console.error("dev-tools: unknown subcommand. Use: route | update-context | doctor | plugin-update | global-settings-diff | shadcn-install | version");
       process.exit(2);
   }
 }

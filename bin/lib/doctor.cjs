@@ -290,6 +290,55 @@ function currencyStatus(knob = "notify-only", { online = false } = {}) {
   return { status: "checked", mode: knob, detail: "currency probe ran (bounded).", command: null };
 }
 
+// PLUGIN CURRENCY (installed vs available Cinatra-family Claude Code plugins),
+// per the `currency.plugin` knob ("auto" | "notify-only", default "auto").
+//
+// OFFLINE-SAFE + READ-ONLY: by default (doctor's read-only path) this does NOT
+// touch the network — it returns `unknown` plus the EXACT commands for a real
+// check. With `online:true` (the doctor `--online` opt-in) it runs the bounded
+// READ-ONLY probe from plugin-updates.cjs: local registry + cached marketplace
+// metadata + `git ls-remote` freshness. It NEVER writes and NEVER runs the
+// cache-writing `claude plugin marketplace update` — refresh/apply is the
+// separate, explicit `plugin-update` step.
+//
+// Returns { status: "unknown"|"checked", mode, detail, command, plugins? }.
+function pluginCurrencyStatus(knob = "auto", { online = false, deps } = {}) {
+  const applyHint =
+    knob === "auto"
+      ? "mode=auto: `plugin-update` applies eligible updates to installed first-party plugins; anything not possible degrades to a visible notify + the manual command."
+      : "mode=notify-only: `plugin-update` reports + shows the manual command, never auto-applies.";
+  if (!online) {
+    return {
+      status: "unknown",
+      mode: knob,
+      detail: `plugin currency not probed (offline-safe default — no network call). ${applyHint}`,
+      command:
+        "`dev-tools.cjs doctor --online` (read-only check) or `dev-tools.cjs plugin-update` (explicit refresh/apply)",
+      plugins: [],
+    };
+  }
+  const pluginUpdates = require("./plugin-updates.cjs");
+  const check = pluginUpdates.checkUpdates({ deps: deps || pluginUpdates.defaultDeps(), network: true });
+  const updatable = check.plugins.filter((p) => p.state === "update-available");
+  const degraded = check.plugins.filter((p) => p.state !== "current" && p.state !== "update-available");
+  const bits = [
+    `${check.plugins.length} first-party plugin(s) discovered`,
+    `${updatable.length} update(s) available`,
+  ];
+  if (degraded.length) bits.push(`${degraded.length} undeterminable/held (see per-plugin reason + manual command)`);
+  if (check.error) bits.push(check.error);
+  return {
+    status: "checked",
+    mode: knob,
+    detail: `${bits.join("; ")}. ${applyHint}`,
+    command:
+      updatable.length || degraded.length || check.error
+        ? `\`dev-tools.cjs plugin-update\` (or per plugin: ${pluginUpdates.manualCommand()})`
+        : null,
+    plugins: check.plugins,
+  };
+}
+
 // Summarize a check list into counts + a worst-status verdict.
 function summarize(checks) {
   const counts = { ok: 0, warn: 0, fail: 0 };
@@ -312,5 +361,6 @@ module.exports = {
   probeGsd,
   runToolchain,
   currencyStatus,
+  pluginCurrencyStatus,
   summarize,
 };
