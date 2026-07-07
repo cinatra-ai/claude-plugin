@@ -1,6 +1,6 @@
 ---
 name: domain-gotchas
-description: "Apply the per-repo domain trap that bites when working in a specific cinatra repo: design-repo asset/spec conformance (the spec wins; defer to the live design system, never fork it), reusable release CI already exists (reuse, don't reinvent), schema-migration fixture re-apply, Next.js dev cold-compile staleness during live verification, the browser-URL vs container-URL split, a CodeQL false-positive needs an explicit dismissal, the docs-repo convention, real-host CLI end-to-end testing (run the real command, not just unit asserts), the verify-don't-rebuild closeout pattern (the closeout tooling already exists — reuse it), the machine-arm merge-trailer format, and the buffered agent-output-mtime trap. Activates for: 'design repo asset conformance', 'asset spec conformance', 'reusable release ci', 'schema migration fixture re-apply', 'codeql false positive dismissal', 'next cold compile staleness', 'browser url vs container url', 'docs repo convention', 'split a package', 'real host cli testing', 'verify don't rebuild closeout', 'machine arm merge trailer', 'agent output mtime'. Each is a non-obvious fact that has cost real rework; re-verify against current state since the repos drift."
+description: "Apply the per-repo domain trap that bites when working in a specific cinatra repo: design-repo asset/spec conformance (the spec wins; defer to the live design system, never fork it), reusable release CI already exists (reuse, don't reinvent), schema-migration fixture re-apply, Next.js dev cold-compile staleness during live verification, the browser-URL vs container-URL split, a CodeQL false-positive needs an explicit dismissal, the docs-repo convention, real-host CLI end-to-end testing (run the real command, not just unit asserts), the verify-don't-rebuild closeout pattern (the closeout tooling already exists — reuse it), the machine-arm merge-trailer format, the buffered agent-output-mtime trap, and the immutable-release tag-name reservation (deleting an immutable release permanently reserves its tag; GH013 with no visible ruleset). Activates for: 'design repo asset conformance', 'asset spec conformance', 'reusable release ci', 'schema migration fixture re-apply', 'codeql false positive dismissal', 'next cold compile staleness', 'browser url vs container url', 'docs repo convention', 'split a package', 'real host cli testing', 'verify don't rebuild closeout', 'machine arm merge trailer', 'agent output mtime', 'immutable release tag', 'gh013 tag creation'. Each is a non-obvious fact that has cost real rework; re-verify against current state since the repos drift."
 argument-hint: "[design | release-ci | schema | codeql | docs]"
 allowed-tools:
   - Read
@@ -19,6 +19,9 @@ triggers:
   - "verify don't rebuild closeout"
   - "machine arm merge trailer"
   - "agent output mtime"
+  - "immutable release tag"
+  - "deleted release tag reserved"
+  - "gh013 tag creation"
 antiTriggers:
   - "pdf"
   - "personal repo"
@@ -103,6 +106,12 @@ route after a change can serve stale output until the route finishes compiling.
 During live verification, warm the route (or wait for the compile to settle) before
 trusting what the page shows — a cold-compile artifact is not the real behaviour.
 
+The complementary trap is a STALE `.next` build cache: a warm-looking server can
+serve PRE-CHANGE output from a cached build, so a "the change renders" check
+documents the cache, not the code. Verifying that a change is implemented in code
+means building fresh from the exact commit under test AND warming the route —
+treat both cold-compile output and stale-cache output as non-evidence.
+
 ## The browser-URL vs container-URL split
 
 When the app runs in containers, the URL the BROWSER uses to reach a service is not
@@ -143,6 +152,19 @@ The closeout job is to VERIFY with those existing tools and fix what they find,
 NOT to rebuild the tooling from scratch. Before writing a new check, look for the
 one a previous closeout already shipped and run it; reinventing it is wasted work
 and drifts from the established sweep.
+
+## Deleting an immutable GitHub release permanently reserves its tag name
+
+On a repo with immutable releases, deleting a release does NOT free its tag for
+re-use: treat the name as permanently reserved platform-side (absent GitHub-side
+remediation). Every later attempt to create
+that exact tag fails with `GH013: Cannot create ref due to creations being
+restricted` for every actor — and NO ruleset explains it (REST and GraphQL show
+nothing at repo or org level), while suffixed variants of the name still push
+fine. Never delete an immutable release as a path to re-cutting the same
+version: keep the existing tag or ship the next version. When a tag push hits
+GH013 and no ruleset is visible, suspect this reservation (check the repo's
+deleted releases) before hunting for phantom protection.
 
 ## The machine-arm merge-trailer format
 

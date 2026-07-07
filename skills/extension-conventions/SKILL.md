@@ -121,6 +121,19 @@ the app, and the live SDK packages register them.
   closure seeded, or the app boot crashes on a missing closure member. Seed the
   closure first, then verify boot on the real surface (see the evidence recipe
   above for what a real boot proof requires).
+- **A core capability deletion is a lockstep cutover with REQUIRED release
+  riders.** When the app removes or relocates a capability that PUBLISHED
+  extension versions depend on (e.g. a host-owned store moves into its owning
+  connector), the
+  currently-published extension versions break on the new core. Two obligations
+  follow. At MERGE time it is one choreography: the extension-side surfaces,
+  the core deletion, and the lock bump land together (the pins-ride-the-same-PR
+  rule above), never split so that core briefly ships without the replacement.
+  At RELEASE time the affected extension releases are REQUIRED riders of the
+  next core release — enumerate them up front by diffing the deletion against
+  what the published extension versions consume, and ship them in the same
+  release wave; a rider discovered after the core ships is a broken install for
+  every user of the published extension.
 
 ## Worktree-evaporates, branch-survives
 
