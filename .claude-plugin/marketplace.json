@@ -10,9 +10,9 @@
   "plugins": [
     {
       "name": "cinatra",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": ".",
-      "description": "The shared environment skills (setup, onboarding, cinatra-dev-tools, extension-conventions, domain-gotchas), the extension-development pack (extension-authoring, connector/agent/artifact/skill specialists, extension-boundary, two extension slash commands), and the dev-tools CLI engine."
+      "description": "The shared environment + engineering-process skills (setup, onboarding, cinatra-dev-tools, extension-conventions, domain-gotchas, Codex-convergence, grounding, real-surface verification, GSD planning hygiene, workspace setup, settings hygiene, doctor, plugin baseline, source-leak discipline, Renovate handling), the extension-development pack (extension-authoring, connector/agent/artifact/skill specialists, extension-boundary, two extension slash commands), and the dev-tools CLI engine."
     }
   ]
 }
