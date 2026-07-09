@@ -25,6 +25,7 @@ const cp = require("node:child_process");
 const os = require("node:os");
 const path = require("node:path");
 const fs = require("node:fs");
+const { claudeConfigDir, codexSkillsDir } = require("./runtime-artifact-layout.cjs");
 
 const DEFAULT_TIMEOUT_MS = 8000;
 
@@ -85,6 +86,9 @@ function defaultDeps() {
     },
     existsSync: (p) => fs.existsSync(p),
     readFileSync: (p) => fs.readFileSync(p, "utf8"),
+    // injectable so tests can point the Codex-leg resolution (CODEX_HOME) at a
+    // sandbox without touching real process.env.
+    env: () => process.env,
   };
 }
 
@@ -243,6 +247,10 @@ function runToolchain(deps = defaultDeps()) {
   checks.push(...probeGit(deps));
   // the pack co-exists with a live GSD install; report its presence (not a fail).
   checks.push(probeGsd(deps));
+  // shadcn skill presence for UI-relevant work (claude-plugin#16) — a known
+  // tool that can be missing/misconfigured; the fix is consent-gated (never
+  // run from here — see lib/ensure.cjs).
+  checks.push(...probeShadcnSkill(deps));
   return checks;
 }
 
@@ -259,6 +267,61 @@ function probeGsd(deps) {
   }
   return mk("gsd-core", "a GSD install (co-resident)", "warn", "a GSD install was not detected (the pack runs without one)",
     "optional: add a GSD install if your workflow uses it (the dev pack co-exists without clobbering a GSD install)");
+}
+
+// shadcn skill presence (claude-plugin#16) — READ-ONLY. Checks BOTH the Claude
+// leg (~/.claude/skills/shadcn) and the Codex leg ($CODEX_HOME/skills/shadcn,
+// default ~/.codex/skills/shadcn) as TWO SEPARATE checks, so a partial install
+// (present for one tool, missing for the other — a real "misconfigured" state)
+// is visible on its own rather than averaged away. Absence is `warn`, not
+// `fail`: the shadcn skill is only needed for UI-relevant work; the pack runs
+// fine without it (same "optional, pack co-exists without it" shape as
+// probeGsd). This probe NEVER installs — the fix is the consent-gated shared
+// `ensure` path (lib/ensure.cjs) -> `dev-tools.cjs shadcn-install` (#191).
+function probeShadcnSkill(deps) {
+  const env = (deps.env && deps.env()) || process.env;
+  const claudeDest = path.join(claudeConfigDir(deps.homedir()), "skills", "shadcn");
+  const codexDest = path.join(codexSkillsDir(env), "shadcn");
+  const fix = "ask the user first; on yes run `dev-tools.cjs shadcn-install` (never auto-installed — claude-plugin#16)";
+  return [
+    describeShadcnLeg("shadcn-skill-claude", "shadcn skill (Claude)", claudeDest, deps, fix),
+    describeShadcnLeg("shadcn-skill-codex", "shadcn skill (Codex)", codexDest, deps, fix),
+  ];
+}
+
+// One leg's presence + a best-effort ownership detail. Ownership (ours vs a
+// foreign/differently-sourced dir with the same name) needs the shadcn-install
+// pinned manifest; if that can't be loaded (e.g. no local/staged payload) this
+// degrades to a plain presence report rather than throwing — doctor's fail-safe
+// rule holds, and ownership is DETAIL-only here, never changes the ok/warn
+// verdict (a foreign dir still counts as "present": something IS at that path).
+//
+// Presence means a VALID skill dir, not just an existing path (codex round-1,
+// claude-plugin#16): shadcn-install's own verifyBundle() treats "SKILL.md +
+// referenced files" as the completeness bar for an installed bundle, so an
+// empty/partial dir with no SKILL.md is exactly the "misconfigured" state the
+// issue calls out — reporting it `ok` would make `ensure --apply` silently
+// no-op on a broken install instead of asking to fix it. Require SKILL.md
+// before `ok`; a dir that exists but lacks it is `warn` (a fix candidate),
+// same as a fully-absent dir.
+function describeShadcnLeg(id, label, dest, deps, fix) {
+  if (!deps.existsSync(dest)) {
+    return mk(id, label, "warn", `not installed at ${dest} (only needed for UI-relevant work)`, fix);
+  }
+  if (!deps.existsSync(path.join(dest, "SKILL.md"))) {
+    return mk(id, label, "warn", `present at ${dest} but incomplete (no SKILL.md — misconfigured install)`, fix);
+  }
+  let ownershipNote = "";
+  try {
+    const shadcnInstall = require("./shadcn-install.cjs");
+    const insp = shadcnInstall.inspectDestination(dest, shadcnInstall.loadManifest());
+    if (insp.state === "foreign") {
+      ownershipNote = " — present but NOT managed by this pack (foreign dir; re-install needs --force)";
+    }
+  } catch {
+    /* ownership detail unavailable (e.g. no local pinned manifest) — presence still stands */
+  }
+  return mk(id, label, "ok", `present at ${dest}${ownershipNote}`, null);
 }
 
 // TOOLCHAIN CURRENCY (installed vs latest), per the `currency.dependency` knob.
@@ -359,6 +422,7 @@ module.exports = {
   probeGit,
   probeDocker,
   probeGsd,
+  probeShadcnSkill,
   runToolchain,
   currencyStatus,
   pluginCurrencyStatus,
