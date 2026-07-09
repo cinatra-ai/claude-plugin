@@ -53,7 +53,7 @@ Add this repo as a plugin marketplace, then install the foundation plugin:
 
 ```sh
 claude plugin marketplace add git@github.com:cinatra-ai/claude-plugin.git
-claude plugin install cinatra-foundation@cinatra-foundation
+claude plugin install cinatra@cinatra
 ```
 
 (Use the `https://github.com/cinatra-ai/claude-plugin.git` URL instead of the SSH one if
@@ -64,11 +64,29 @@ from `commands/*.md`, and resolves the bundled `dev-tools` CLI engine at
 `$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs`. The skills then activate on their
 natural-language triggers.
 
+> **Migration note — already on `cinatra-foundation`?** The plugin identity
+> (the chat namespace shown before every skill, e.g. `cinatra:setup`) was
+> renamed from `cinatra-foundation` to `cinatra`. A rename is a new plugin
+> identity to Claude Code, not an in-place update — `claude plugin update
+> cinatra-foundation` will not pick it up. Uninstall the old name and install
+> the new one:
+>
+> ```sh
+> claude plugin uninstall cinatra-foundation
+> claude plugin marketplace update
+> claude plugin install cinatra@cinatra
+> ```
+>
+> If skills still don't activate after that, refresh the marketplace/plugin
+> cache: remove and re-add the marketplace (`claude plugin marketplace remove
+> cinatra-foundation` — the OLD marketplace identity — then the `marketplace
+> add` command above) and reload Claude Code.
+
 **Updates use the native plugin update model** (no self-updater). Manually:
 
 ```sh
 claude plugin marketplace update   # refresh the marketplace from main
-claude plugin update cinatra-foundation
+claude plugin update cinatra
 ```
 
 Or let the bundled engine check and apply per-plugin updates for the installed
@@ -274,7 +292,7 @@ old git-based version check has been retired.
 
 ```sh
 claude plugin marketplace update   # refresh the marketplace from main
-claude plugin update cinatra-foundation
+claude plugin update cinatra
 ```
 
 or via the bundled engine, which discovers the installed Cinatra-family
