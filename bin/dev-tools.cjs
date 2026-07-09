@@ -21,6 +21,13 @@
 //   global-settings-diff [--json]                 READ-ONLY global-baseline drift (#129)
 //   shadcn-install [--home d] [--codex-home d]    install upstream shadcn for
 //                  [--force] [--json]             BOTH Claude AND Codex (#191)
+//   ensure --tool <id> [--apply]                  shared detect->consent->apply
+//          [--home d] [--codex-home d] [--force]  path (claude-plugin#16): READ-ONLY
+//          [--json]                               check by default (reports the exact
+//                                                  fix command, installs nothing);
+//                                                  --apply runs the fix for that ONE
+//                                                  tool and re-verifies. Known tools:
+//                                                  shadcn-skill.
 //   version                                       print pack version
 // ---------------------------------------------------------------------------
 
@@ -230,6 +237,70 @@ function cmdShadcnInstall(argv) {
   }
 }
 
+// ensure — the shared detect -> consent -> apply path (claude-plugin#16). Wraps
+// an EXISTING doctor probe + an EXISTING fix for one named tool behind a single
+// consent gate, so every skill in this pack asks the same way instead of each
+// growing its own bespoke check-then-fix flow.
+//
+//   (default)  READ-ONLY check: reports the tool's status and, if action is
+//              needed, the EXACT fix command — never installs anything. A
+//              skill relays this to the user and asks before doing more.
+//   --apply    Runs the fix for that ONE tool (only after the user said yes)
+//              and re-verifies the result — never a blind "done".
+//
+// Known tools today: shadcn-skill (installs via `shadcn-install` on --apply).
+function cmdEnsure(argv) {
+  const flags = parseFlags(argv);
+  const ensure = require("./lib/ensure.cjs");
+  if (typeof flags.tool !== "string") {
+    console.error(`dev-tools ensure: pass --tool <id>. Known tools: ${ensure.listTools().join(", ")}`);
+    process.exit(2);
+  }
+  // Same "a value flag passed with no value is a bug, not a default" guard as
+  // shadcn-install — never let a bare `--home` silently resolve to a boolean.
+  for (const k of ["home", "codex-home"]) {
+    if (flags[k] === true) {
+      emit({ ok: false, code: "ENSURE_BAD_FLAG", error: `--${k} requires a directory value` }, true);
+      process.exit(2);
+    }
+  }
+  const apply = Boolean(flags.apply);
+  const applyOpts = {};
+  if (typeof flags.home === "string") applyOpts.home = flags.home;
+  if (typeof flags["codex-home"] === "string") applyOpts.codexHome = flags["codex-home"];
+  if (flags.force) applyOpts.force = true;
+
+  const result = ensure.ensureTool(flags.tool, { apply, ...applyOpts });
+
+  if (result.status === "unknown") {
+    emit(result, true);
+    process.exit(2);
+  }
+  if (flags.json) {
+    emit(result, true);
+  } else if (!apply) {
+    const lines = [`dev-tools ensure --tool ${flags.tool} (read-only check)`, ""];
+    for (const c of result.checks) {
+      const mark = c.status === "ok" ? "OK  " : c.status === "warn" ? "WARN" : "FAIL";
+      lines.push(`[${mark}] ${c.label}: ${c.detail}`);
+    }
+    lines.push("");
+    if (result.needsAction) {
+      lines.push(`ACTION NEEDED: ${result.prompt}`);
+      lines.push("This check never installs on its own — ask the user first; re-run with --apply only on yes.");
+    } else {
+      lines.push(`${result.label}: already OK — nothing to do.`);
+    }
+    emit(lines.join("\n"), false);
+  } else {
+    const lines = [`dev-tools ensure --tool ${flags.tool} --apply`, ""];
+    lines.push(`[${result.ok ? "OK  " : "FAIL"}] ${result.detail}`);
+    emit(lines.join("\n"), false);
+  }
+  const failed = apply ? !result.ok : result.status === "fail";
+  process.exit(failed ? 1 : 0);
+}
+
 // plugin-update — the EXPLICIT plugin refresh/apply step (kept OUT of doctor's
 // read-only default path). Flow: read-only check (registry + cached metadata +
 // ls-remote) -> per the mode, apply PER-PLUGIN updates via the native CLI
@@ -302,9 +373,10 @@ function main() {
     case "plugin-update": return cmdPluginUpdate(rest);
     case "global-settings-diff": return cmdGlobalSettingsDiff(rest);
     case "shadcn-install": return cmdShadcnInstall(rest);
+    case "ensure": return cmdEnsure(rest);
     case "version": return emit(readVersion(), false);
     default:
-      console.error("dev-tools: unknown subcommand. Use: route | update-context | doctor | plugin-update | global-settings-diff | shadcn-install | version");
+      console.error("dev-tools: unknown subcommand. Use: route | update-context | doctor | plugin-update | global-settings-diff | shadcn-install | ensure | version");
       process.exit(2);
   }
 }

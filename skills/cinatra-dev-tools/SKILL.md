@@ -36,7 +36,20 @@ and in-memory only — never surface or write a secret value.
 3. Credential principle for LLM calls: keys resolve ENV-FIRST and stay RAM-only; a
    key value is NEVER passed as a CLI subcommand argument (that would expose it)
    and NEVER written into a skill, log, or commit.
-4. `update` — keep the installed Cinatra-family Claude Code plugins current via
+4. UI-relevant work needs the shadcn skill (cinatra's UI is shadcn/ui-based).
+   Ensure it via the pack's shared detect -> consent -> apply path — READ-ONLY
+   by default, it never installs anything on its own:
+
+   ```sh
+   node "$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs" ensure --tool shadcn-skill --json
+   ```
+
+   `needsAction:true` means missing/misconfigured for Claude and/or Codex —
+   relay the exact `fixCommand` and ASK before doing anything else; only on
+   yes, re-run with `--apply` (installs via `shadcn-install`, then
+   re-verifies). Already-present is a clean no-op. Never silently skip a
+   missing tool and never install without consent.
+5. `update` — keep the installed Cinatra-family Claude Code plugins current via
    the deterministic engine (never hand-roll the update):
 
    ```sh
@@ -90,6 +103,32 @@ pinned sync — clean strays before trusting a refresh.
 - A key value is **NEVER** passed as a CLI subcommand argument (that would expose
   it), and **NEVER** written into a skill, a log, or a commit.
 - No secret value appears in this pack, ever.
+
+## UI tooling — the shadcn skill (consent-gated)
+
+cinatra's UI is shadcn/ui-based (`components.json`, style `radix-nova`), so
+UI-relevant local-dev work needs the shadcn skill available for both Claude
+and Codex. This skill ensures it via the pack's SHARED
+detect -> consent -> apply engine (`bin/lib/ensure.cjs`, claude-plugin#16) —
+the same engine `setup` uses, so consent behavior never drifts between
+skills:
+
+```sh
+node "$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs" ensure --tool shadcn-skill --json   # read-only check
+node "$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs" ensure --tool shadcn-skill --apply  # only after the user says yes
+```
+
+- The check is **READ-ONLY** and reports the exact fix command
+  (`shadcn-install`) when the skill is missing/misconfigured for either tool —
+  it never installs anything on its own.
+- **Always ask** the user before running `--apply`; never silently skip a
+  missing tool and never install without consent (the pack's shared consent
+  doctrine — see `setup`).
+- Already-present is a clean no-op; re-running is safe.
+- `doctor` (this skill's step 1 in `setup`, and `dev-tools.cjs doctor`)
+  reports shadcn-skill presence as part of its normal read-only sweep — a
+  missing/misconfigured leg shows up there too, it just never gets installed
+  from `doctor` itself.
 
 ## Plugin updates (`update`)
 
