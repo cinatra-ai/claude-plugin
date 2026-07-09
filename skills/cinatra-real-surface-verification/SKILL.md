@@ -38,8 +38,9 @@ undrivable surface rather than silently waiving it.
   any RED before acting.
 - **The exact head SHA.** Bind a verdict / verify run to the specific commit;
   `--match-head-commit` on the merge side is the correctness backstop.
-- **Audit `via:` for OBO vs bypass.** A content-write "proof" authorized by a
-  trusted-dev-host admin bypass is NOT production-parity — check the audit actor.
+- **Audit `via:` for a real authorization vs an admin bypass.** A content-write
+  "proof" authorized by a privileged admin-bypass path is NOT
+  production-parity — check the audit actor.
 - **Capture, not tail.** Capture command output to a file; a tail-piped or
   filename-collided run is not evidence.
 - **Verify the mutation landed.** Confirm the real remote/merge state (remote
@@ -137,13 +138,14 @@ flips them to the real path. THREE deterministic fresh-attempt failures are a re
 bug, not a flake. Drive the real path before concluding green; reaching for "it's
 flaky" on a reproducible failure hides production boot crashes.
 
-## Check the audit `via:` — OBO vs bypass
+## Check the audit `via:` — real authorization vs an admin bypass
 
-A content-write "proof" can be authorized by a trusted-dev-host admin BYPASS rather
-than the real on-behalf-of / agent-run path — which is NOT production parity. Before
-claiming a write path is proven, check the audit actor (`via:`): a `platform_admin`
-bypass is not the same as a real production authorization path. When in doubt, turn
-the bypass off or drive the real wrapper, and re-check the actor.
+A content-write "proof" can be authorized by a privileged admin-bypass path
+rather than the real, authenticated user/agent-run path — which is NOT
+production parity. Before claiming a write path is proven, check the audit
+actor (`via:`): an admin-bypass actor is not the same as a real production
+authorization path. When in doubt, turn the bypass off or drive the real
+wrapper, and re-check the actor.
 
 ## How to verify (operational)
 

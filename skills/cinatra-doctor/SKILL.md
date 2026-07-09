@@ -53,8 +53,9 @@ for every gap. READ-ONLY: this skill never writes; applying fixes is setup.
   any RED before acting.
 - **The exact head SHA.** Bind a verdict / verify run to the specific commit;
   `--match-head-commit` on the merge side is the correctness backstop.
-- **Audit `via:` for OBO vs bypass.** A content-write "proof" authorized by a
-  trusted-dev-host admin bypass is NOT production-parity — check the audit actor.
+- **Audit `via:` for a real authorization vs an admin bypass.** A content-write
+  "proof" authorized by a privileged admin-bypass path is NOT
+  production-parity — check the audit actor.
 - **Capture, not tail.** Capture command output to a file; a tail-piped or
   filename-collided run is not evidence.
 - **Verify the mutation landed.** Confirm the real remote/merge state (remote

@@ -37,8 +37,9 @@ its auto-bump absorbs tip drift, and a hand bump fights it.
   any RED before acting.
 - **The exact head SHA.** Bind a verdict / verify run to the specific commit;
   `--match-head-commit` on the merge side is the correctness backstop.
-- **Audit `via:` for OBO vs bypass.** A content-write "proof" authorized by a
-  trusted-dev-host admin bypass is NOT production-parity — check the audit actor.
+- **Audit `via:` for a real authorization vs an admin bypass.** A content-write
+  "proof" authorized by a privileged admin-bypass path is NOT
+  production-parity — check the audit actor.
 - **Capture, not tail.** Capture command output to a file; a tail-piped or
   filename-collided run is not evidence.
 - **Verify the mutation landed.** Confirm the real remote/merge state (remote
@@ -84,9 +85,9 @@ and let the rolling lock's own mechanism move the pin.
 Renovate's npm manager **skips** `file:`/`link:`/`workspace:`-protocol deps (no
 registry version to resolve → `skipReason: local`), so a **vendored** dependency
 NEVER surfaces a dashboard PR. Do not expect Renovate to keep such a dep current —
-route its currency to the **manual / closeout** path (the *required-extension lock
-refresh + published-version parity* closeout wave's manual package.json currency
-review), never a dashboard PR. Example: the vendored MCP SDK server
+route its currency to a **manual currency-review** path (a periodic, deliberate
+review of that dependency's `package.json` pin against the latest upstream),
+never a dashboard PR. Example: the vendored MCP SDK server
 `@modelcontextprotocol/server` (`file:vendor` at `packages/mcp-server`) is
 Renovate-invisible and must be advanced by hand via that tracked currency review.
 
