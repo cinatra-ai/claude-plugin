@@ -89,6 +89,32 @@ evidence reference above — and both skills reference it. Do not duplicate it h
   explicitly and route to the operator — do not quietly downgrade to a stub and
   call it proven.
 
+## Any UI-work closes only on recorded screenshots (the universal close invariant)
+
+The "screenshots/video recorded on the PR/issue; no captured proof, no close"
+rule applies to **ANY UI-work — every change that adds or alters a user-visible
+surface — not only the design-surface (spec-covered) case below.** An unspecced/
+internal surface, a UI bugfix, or a new element with no spec yet is held to the
+same bar: recorded screenshots of everything implemented on the PR/issue before
+close; an uncaptured "verified" claim is fabrication, exactly like an uncaptured
+"design-verified" or "codex-converged" claim. **CI-green is the floor, not the
+proof.**
+
+The **infeasible-surface fallback does NOT satisfy this gate for any UI-work:** an
+infeasible-surface record + the strongest available replacement checks are INTERIM
+evidence only — the UI-work issue stays **open or explicitly blocked** until the
+required screenshots can actually be recorded; it never closes on the fallback
+alone (this hardens the general "never a silent waiver" rule above for UI-work).
+
+This section STATES the universal invariant and DELEGATES enforcement. The tier
+CLASSIFICATION (spec-covered vs not-spec-covered) and the not-spec-covered
+**evidence-inventory** procedure are owned by a dedicated UI-conformance skill,
+which also makes the check ALWAYS-ON and drives the Playwright pass + screenshots
+onto the PR; loop-level detection + close enforcement is owned by the coordinator.
+The spec-covered **bidirectional conformance mechanics** remain owned HERE — the
+design-surface section immediately below — which the UI-conformance skill
+references (does not duplicate) for its spec-covered tier.
+
 ## Design-surface conformance — bidirectional, against the pinned spec
 
 A **design-surface** change (a user-visible surface covered by a design spec —
@@ -115,9 +141,10 @@ build** — not only a dev server:
   truncation.
 - **No captured proof, no close.** Claiming "design-verified" without a captured
   render is fabrication — exactly like claiming codex-converged without a captured
-  verdict. The general infeasible-surface fallback (record the reason + strongest
-  replacement checks) does NOT apply to a design-surface close: a surface that
-  cannot be driven means the issue stays open, routed to the operator. Until the
+  verdict. Per the universal close invariant above, the infeasible-surface
+  fallback (record the reason + strongest replacement checks) does NOT satisfy the
+  gate for a design-surface close either: a surface that cannot be driven means the
+  issue stays open (or explicitly blocked), routed to the operator. Until the
   mechanical conformance gate exists, every design-surface change — fix, feature,
   or refactor — also ships targeted Playwright tests for the known failure classes
   (missing functionality, stale elements, wrong data field), with CI status +
