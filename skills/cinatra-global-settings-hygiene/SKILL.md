@@ -24,7 +24,7 @@ The POLICY for machine-global agent configuration in the cinatra org — *where*
 config lives and *which conventions* hold. This skill owns the policy/conventions;
 it does NOT verify or apply them.
 
-> **Boundary (the design's codex finding 2).** THIS skill owns the POLICY. The
+> **Boundary.** THIS skill owns the POLICY. The
 > `cinatra-doctor` / `setup` skills own the machine-level ENFORCEMENT —
 > `cinatra-doctor` reads the global baseline drift (read-only), `setup` applies the
 > exact diffs. Cross-link, no overlap: come HERE for "what the convention is and
@@ -59,21 +59,16 @@ your OWN uniquely-named subdir — shared scratch can hold another task's live w
 
 > Repo/org GOVERNANCE levers — org rulesets (the Team-plan lever that auto-covers
 > new repos), per-repo branch protection, admin-bypass, tags and archived repos — are
-> NOT agent-config hygiene; they belong to your org's repo-governance conventions.
-> This skill cross-links there and does not restate that doctrine.
+> NOT agent-config hygiene; that is a separate governance concern outside this
+> plugin, and this skill does not restate that doctrine.
 
 ## Steps (operational)
 
 1. For a "where should this config live / is a per-repo `.claude` ok" question:
    apply the centralized-global policy above.
-2. For an "how do I make a protection cover all repos / org ruleset" question: defer
-   to your org's repo-governance skill/doctrine, not this skill.
+2. For an "how do I make a protection cover all repos / org ruleset" question: that
+   is repo/org governance (rulesets, branch protection, admin-bypass) — outside
+   this plugin and outside this skill's policy.
 3. To actually VERIFY or APPLY the machine baseline against this policy, hand off to
    `cinatra-doctor` (read-only check) / `setup` (apply the diffs) — this skill does
    not write.
-
-## Source / acceptance matrix (this skill)
-
-| source doctrine | acceptance check |
-|---|---|
-| Machine-global agent-config POLICY: settings centralized in the global config (not per-repo); no per-repo `.claude/` in active repos; workspace-artifacts under the org `.claude/` (global-settings + workspace-hygiene memory) | The skill states the policy only and explicitly defers ENFORCEMENT to `cinatra-doctor`/`setup` (codex finding 2 boundary, no overlap) and repo/org GOVERNANCE (rulesets, admin-bypass) to your org's repo-governance conventions; it covers centralized-settings, no-per-repo-`.claude`, and artifacts-under-org-`.claude`; it carries no machine-local paths or private tokens; the static leak gate is green over the shipped content. |

@@ -24,7 +24,7 @@ undrivable surface rather than silently waiving it.
 
 # Reference: evidence / verification recipe (the ONE contract)
 
-> Shared reference (codex finding 11). The single source of truth for "what
+> Shared reference. The single source of truth for "what
 > counts as proof". Several skills in this pack `@`-include this rather than
 > restating it — including `cinatra-doctor` (what a green check means) and
 > `cinatra-real-surface-verification` (the verify-stack recipe — its single
@@ -91,8 +91,9 @@ evidence reference above — and both skills reference it. Do not duplicate it h
 ## Design-surface conformance — bidirectional, against the pinned spec
 
 A **design-surface** change (a user-visible surface covered by a design spec —
-cinatra-ai/design `specs/*.html` + tokens; the issue carries the `design-surface`
-label and pins the exact spec commit) is proven only by BIDIRECTIONAL 100%
+your organization's authoritative `specs/*.html` + tokens source; the issue
+carries the `design-surface` label and pins the exact spec commit) is proven
+only by BIDIRECTIONAL 100%
 conformance, driven as a live Playwright render on a **production-equivalent
 build** — not only a dev server:
 
@@ -156,10 +157,3 @@ the bypass off or drive the real wrapper, and re-check the actor.
    privileged write.
 4. If a surface cannot be driven, REFUSE to certify it and hand off to the operator
    — never a silent waiver.
-
-## Source / acceptance matrix (this skill)
-
-| source doctrine | acceptance check |
-|---|---|
-| Verify on REAL surfaces + the reusable verify-stack recipe + spin-up pre-authorization + the OBO-vs-bypass caveat + the stub-masks-boot-crash trap (W1 memory-transfer row → `cinatra-real-surface-verification`) | The skill references the shared verify-stack recipe (does not restate the ports/template); it mandates a real browser / real tools / real auth e2e with seeded fixtures; it states the green-stub-masks-boot-crash trap (3 deterministic failures = real bug) and the audit-`via:` OBO-vs-bypass check; it refuses to certify an undrivable surface instead of waiving; the static leak gate is green over the shipped content. |
-| Design-surface verification doctrine (owner-ratified 2026-07-05, codex-converged) — bidirectional Playwright-vs-spec conformance + proof-at-close | The skill defines design-surface proof as BIDIRECTIONAL conformance against the pinned spec commit (spec→render: every affordance functions, click-and-assert; render→spec: no unspecified/stale elements) on a production-equivalent build; it requires the spec-extracted numbered checklist + screenshots/video recorded on the PR/issue with data-field conformance and the state axes; it treats an uncaptured "design-verified" claim as fabrication; it carries the immediate-slice targeted-Playwright-tests rule until the mechanical gate exists. |

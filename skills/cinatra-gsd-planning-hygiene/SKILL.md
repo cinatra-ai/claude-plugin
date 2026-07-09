@@ -116,12 +116,3 @@ authoring time — the seam *names* drift, the lenses do not):
 Then converge the swept plan with Codex (read-only, STDIN, captured verdict) and
 fold the findings before building. A completeness sweep that is not adversarially
 validated is incomplete.
-
-## Source / acceptance matrix (this skill)
-
-| source doctrine | acceptance check |
-|---|---|
-| org GSD-usage policy (milestone-name-follows-project; per-repo phases; loop never runs the autonomous / complete-milestone commands; milestone stays open) | the skill states each rule; no GSD-product re-documentation; activation fixtures green |
-| planning artifacts strictly local + untracked + gitignored | the skill states the local-only / never-pushed / untrack-a-leak rule; the published-surface token ban is enumerated by CLASS, not by literal token |
-| no planning/provenance tokens in committed content (source-leak gate planning-token rules) | the banned classes are listed (paths / build-stage ordinals / requirement-task-workstream ids / roadmap-state-spec refs / milestone version strings); the gate is named as the line-ratchet backstop |
-| completeness sweep (pre-build lenses + adversarial Codex validation) | the portable lenses are listed and grounded as drift-prone examples; the adversarial-validation step reuses (does not restate) the Codex-pairing discipline |

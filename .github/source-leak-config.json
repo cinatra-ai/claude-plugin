@@ -1,4 +1,19 @@
 {
   "_comment": "Per-repo source-leak-gate config (cinatra-ai/ci reusable, profile default). dev ships only public Claude Code dev skills (Apache-2.0); no scaffold/source exclusions are needed. Add line-anchored lineExcludes here only for unavoidable false positives.",
-  "lineExcludes": []
+  "_lineExcludes_rationale": "SLG_METHODOLOGY fires on the bare token GSD/gsd treating it as an internal-methodology acronym; every occurrence here is the public third-party GSD product this pack co-exists with and documents usage of (cinatra-gsd-planning-hygiene, cinatra-source-leak-discipline, cinatra-doctor) — narrow, phrase-scoped forms only, each anchored to the exact wording used. SLG_PLANNING_DOC fires on the substring 'drift gate' — here it names this org's own skills-drift CI gate (what it does, not a planning artifact).",
+  "lineExcludes": [
+    "\\bGSD install\\b",
+    "GSD-usage",
+    "GSD usage",
+    "GSD planning[- ]branch",
+    "GSD planning hygiene",
+    "gsd planning hygiene",
+    "gsd hygiene",
+    "the GSD product",
+    "a live GSD",
+    "cinatra-gsd-planning-hygiene",
+    "gsd-pr-branch",
+    "skills-drift gate",
+    "drift gate \\("
+  ]
 }

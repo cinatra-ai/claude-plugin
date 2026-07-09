@@ -27,7 +27,7 @@ head.
 
 # Reference: evidence / verification recipe (the ONE contract)
 
-> Shared reference (codex finding 11). The single source of truth for "what
+> Shared reference. The single source of truth for "what
 > counts as proof". Several skills in this pack `@`-include this rather than
 > restating it — including `cinatra-doctor` (what a green check means) and
 > `cinatra-real-surface-verification` (the verify-stack recipe — its single
@@ -137,22 +137,24 @@ Before you open a PR on a gated repo, prove the product branch is clean:
 
 ## Net-new lines are policed EVERYWHERE you write — carry the self-check in every lane prompt
 
-The gate's two hottest bans — a bare milestone version token (the letter `v`
-followed by `digits.digits`) and ANY reference to the private engineering
-tracker — bite on every NET-NEW line an agent writes into a PUBLIC repo:
-source, docs, commit messages, PR-body drafts, AND issue/PR **comments**. The
-repeated real-world trips this milestone were not tracked files at all — they
-were lane-agent comments on public issues/PRs (five separate trips in one day,
-each caught only after it landed). Two disciplines close that hole:
+Whatever a gate's hottest bans are (a bare milestone version token — the
+letter `v` followed by `digits.digits` — and a reference to an internal-only
+issue tracker are common ones), they bite on every NET-NEW line an agent
+writes into a gated repo: source, docs, commit messages, PR-body drafts, AND
+issue/PR **comments**. A gate that only scans tracked files misses
+agent-authored comments entirely, and comments are a real, repeated leak
+vector precisely because nothing else scans them. Two disciplines close that
+hole:
 
-- **Every lane/agent prompt that can write to a public repo carries the leak
-  self-check VERBATIM** (no bare version tokens — write "this milestone" / "the
-  current release" instead; no private-engineering references in any form).
+- **Every lane/agent prompt that can write to a gated repo carries the leak
+  self-check VERBATIM** (no bare version tokens — write "this release" / "the
+  current release" instead; no internal-tracker references in any form).
   A lane brief without the self-check is the defect; do not rely on the agent
   remembering doctrine it was never handed.
 - **Comments are pre-checked like diffs.** Before posting any comment to a
-  public repo, run the same token scan over the comment text you would run over
-  a diff. The PRIVATE repos are exempt — write freely there.
+  gated repo, run the same token scan over the comment text you would run over
+  a diff. If you also maintain non-public repos, they are typically exempt
+  from this scan — a public/gated repo never is.
 
 ## The squash-marker trap (a related gate)
 
@@ -170,13 +172,3 @@ A direct-push correction cannot green a post-merge gate on a protected default
 branch (no PR context). The sanctioned recovery is **green-tip-supersedes**: the
 next PR's push-event run, with a correct marker (or touching no watched surface),
 clears it.
-
-## Source / acceptance matrix (this skill)
-
-| source doctrine | acceptance check |
-|---|---|
-| the org source-leak gate (reusable, per-repo caller, frozen context, line-ratchet, bans planning paths + provenance tokens + bare version strings incl. third-party) | the skill describes the gate generically (no private issue refs, no pinned SHAs as provenance); names the line-ratchet + frozen-context behaviors |
-| the planning-branch helper is NOT gate-clean (it preserves structural planning documents) | the skill states the helper preserves the structural planning docs and therefore is not gate-clean |
-| the two-branch model (private planning branch never pushed; product branch fresh from the remote default with product diff only) + prove-clean-before-PR | the skill gives the two-branch split and the pre-PR proof steps (name-only diff vs the remote default branch; run the repo gate locally; the pack static gate; clean commit/squash titles) |
-| the skills-drift squash-marker trap (post-merge run reads the squash body; marker on the PR head is discarded) | the skill states the marker must live in the squash body and that the recovery is green-tip-supersedes |
-| net-new-line scope: version tokens / private-tracker refs trip the gate from comments and commit messages too; repeated lane-comment trips (this milestone's closeout, recorded on the skills-update wave issue) | the skill states the every-surface scope, the lane-prompt self-check requirement, and the pre-post comment scan |

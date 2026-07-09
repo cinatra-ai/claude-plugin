@@ -22,7 +22,7 @@ without a captured, verified verdict that answers the exact question asked.
 
 # Reference: evidence / verification recipe (the ONE contract)
 
-> Shared reference (codex finding 11). The single source of truth for "what
+> Shared reference. The single source of truth for "what
 > counts as proof". Several skills in this pack `@`-include this rather than
 > restating it — including `cinatra-doctor` (what a green check means) and
 > `cinatra-real-surface-verification` (the verify-stack recipe — its single
