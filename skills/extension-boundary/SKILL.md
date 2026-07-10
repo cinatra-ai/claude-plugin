@@ -1,5 +1,6 @@
 ---
 name: extension-boundary
+user-invocable: false
 description: "Enforce the extension<->core BOUNDARY for cinatra extensions: every rule stated with its enforcing CI gate (repo-relative path in cinatra-ai/cinatra) and what failing looks like. Activates for: 'extension core boundary', 'extension import ban', 'host-peer value import', 'requestedHostPorts grant', 'coupling baseline pinned empty', 'lock equality gate', 'sdk abi byte pin', 'run the extension kind gate', 'can core reference my extension', 'serverEntry import graph'. Host capability ONLY via register(ctx) ports and call-time host services — never @/ imports, never another extension, SDK peers optional-peer-only and type-only over the serverEntry graph; core never imports or even NAMES an extension (generator output is the sole byte-pinned surface; all four coupling baselines are pinned EMPTY); cinatra.extensions == cinatra.systemExtensions == cinatra-required-extensions.lock.json; reproduce locally with node extension-kind-gate.mjs --package-root . plus npm pack --dry-run."
 argument-hint: "[imports | core-coupling | locks | sdk-fence | reproduce]"
 allowed-tools:

@@ -1,5 +1,6 @@
 ---
 name: setup
+user-invocable: false
 description: "Bootstrap a fresh cinatra contributor machine: install the missing toolchain (VS Code + the Claude Code extension, Codex CLI, gh, node/pnpm, Docker, git, and a GSD install) then configure the global Claude baseline (settings.json attribution keys, the org CLAUDE.md block, git core.hooksPath + the commit-msg hook). Activates for: 'set up my cinatra machine', 'install the cinatra prerequisites', 'bootstrap my dev environment', 'install the toolchain', 'fresh machine setup for cinatra'. Idempotent: --dry-run shows EXACT diffs and writes nothing by default; --apply installs/configures on confirm. OS matrix (Homebrew / apt / documented manual); privileged steps are flagged + confirmed separately."
 argument-hint: "[--dry-run | --apply]"
 allowed-tools:

@@ -1,5 +1,6 @@
 ---
 name: onboarding
+user-invocable: false
 description: "Walk a new contributor through the actionable path into the Cinatra dev process: install this skills pack, run the setup skill, get oriented, and find a first piece of work to pick up. Activates for: 'install the dev skills pack', 'set up the dev pack', 'onboard to the dev workflow', 'how do I start contributing', 'find my first issue', 'find work to pick up', 'new to the cinatra dev process', or 'get oriented to start work'. This is the HOW-TO path; it cross-links the other skills in this pack (setup, cinatra-dev-tools, extension-conventions, domain-gotchas)."
 argument-hint: ""
 allowed-tools:

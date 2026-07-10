@@ -1,5 +1,6 @@
 ---
 name: cinatra-dev-tools
+user-invocable: false
 description: "Bring up or refresh the Cinatra LOCAL dev / verify stack and explain the dev extension locks and the LLM-call credential principle. Covers the reusable verify-stack recipe (dedicated db/redis ports + an .env.local template + a per-worktree dev port and queue name) and the common pitfall where a stray published-marker artifact breaks a pinned sync. Activates for: 'run cinatra locally', 'bring up the cinatra dev environment', 'spin up the verify stack', 'make LLM calls locally', 'the dev extension locks'. Credentials resolve from the environment and stay in memory — the skill never surfaces or writes a secret value. Distinct from the `dev-tools` CLI engine (`bin/dev-tools.cjs`): this skill is the natural-language workflow; the CLI is the deterministic engine the skills in this pack shell out to."
 argument-hint: "[--up | --refresh | update [--check | --apply | --notify-only]]"
 allowed-tools:

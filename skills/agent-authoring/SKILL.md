@@ -1,5 +1,6 @@
 ---
 name: agent-authoring
+user-invocable: false
 description: "Author a cinatra agent extension correctly: the three-file package (cinatra/oas.json OpenAgentSpec Flow at agentspec_version 26.1.0, skills/<slug>/SKILL.md system prompt, package.json#cinatra manifest), first-party kind-at-end naming, the metadata.cinatra.type decision table, declarative HITL, orchestrator composition via FlowNode plus inline subflow, the 8 cross-cutting OAS rules, and the llm-bridge / object-envelope runtime contracts. Activates for: 'author a cinatra agent', 'agent extension oas.json', 'openagentspec flow', 'metadata.cinatra.type', 'startnode required or hidden', 'hitlscreens', 'requiresapproval riskclass', 'llm-bridge apinode', 'agent orchestrator subflow', 'agent artifact parity'. Every StartNode input is listed in required OR hidden (a JSON-Schema default does NOT clear the obligation); every llm-bridge ApiNode declares data.cinatra_llm or the run fails with 424; internal composition is FlowNode + inline subflow, never an A2A wrapper; every SKILL return branch emits an object envelope, never a bare array; bump BOTH oas.json packageVersion and package.json version before re-release."
 argument-hint: "[path-to-agent-extension-repo]"
 allowed-tools:

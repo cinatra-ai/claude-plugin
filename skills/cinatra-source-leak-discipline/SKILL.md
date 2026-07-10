@@ -1,5 +1,6 @@
 ---
 name: cinatra-source-leak-discipline
+user-invocable: false
 description: "Ship cinatra planning-tracked work past the org source-leak gate without tripping it. Activates for: 'run the source-leak gate locally', 'make this PR branch gate-clean', 'the GSD planning-branch helper is not gate-clean', 'filter .planning out of a PR', 'the two-branch model', or before opening a PR on a gated cinatra repo. The planning-branch helper preserves the structural planning documents so it is NOT gate-clean — use a private planning branch (never pushed) plus a product branch cut fresh from the remote default with the product diff only, and prove it clean (no planning paths in the diff, run the repo gate locally) before opening the PR. Carry any post-merge-gate squash-marker in the squash body."
 when_to_use: "Trigger phrases: \"source-leak gate\", \"source leak gate\", \"leak gate\", \"two-branch model\", \"gate-clean pr\", \"pr branch clean\", \"pr branch is clean\", \"filter .planning\", \"filter planning from a pr\", \"gsd-pr-branch\", \"squash marker\", \"squash body marker\", \"squash-marker trap\", \"skills-drift marker\", \"post-merge gate marker\"."
 argument-hint: "[--check]"

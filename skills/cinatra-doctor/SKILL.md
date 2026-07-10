@@ -1,5 +1,6 @@
 ---
 name: cinatra-doctor
+user-invocable: false
 description: "Check that a cinatra contributor machine is correctly set up: verify the toolchain (gh authed + repo/project scopes, Codex CLI present, a GSD install, node/pnpm version floors, Docker daemon, git identity + core.hooksPath + commit-msg hook), toolchain currency (installed vs latest), and the global Claude baseline (settings.json attribution keys, the org CLAUDE.md block, the Playwright output-dir pin, no per-repo .claude). Activates for: 'run doctor', 'check my cinatra setup', 'is my environment ready', 'verify the toolchain', 'what's missing for cinatra', 'am I configured'. READ-ONLY: it reports accurate state + actionable fixes and never writes — fixing is setup's job."
 when_to_use: "Trigger phrases: \"doctor\", \"run doctor\", \"check my cinatra setup\", \"check my setup\", \"is my environment ready\", \"verify the toolchain\", \"verify toolchain\", \"what's missing for cinatra\", \"am i configured\"."
 argument-hint: "[--json]"

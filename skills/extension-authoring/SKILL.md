@@ -1,5 +1,6 @@
 ---
 name: extension-authoring
+user-invocable: false
 description: "Run the full development lifecycle for one cinatra extension in Claude Code: discover before creating, collect the exact scaffold inputs, scaffold with the published cinatra CLI, route payload authoring to the kind specialist, validate after every change, drive PR/CI, and stop at a release-readiness report. Activates for: 'create a cinatra extension', 'new cinatra extension', 'scaffold a cinatra extension', 'cinatra create-extension', 'extension development lifecycle', 'author a cinatra connector', 'validate my extension', 'extension release readiness'. Reuse before new — never conclude 'none exist' from one search surface; scope is asked ONLY for connector and skill (agent/artifact/workflow are locked first-party); run node extension-kind-gate.mjs --package-root . plus npm pack --dry-run after EVERY change, never advance on invalid, cap fix retries at 3; the workflow kind is scheduled for removal (cinatra#1030) — do not start new ones; a pushed tag equal to v<package.json.version> (or the published GitHub Release carrying it, on newer workflow generations) IS the marketplace publish trigger — report release-readiness only, never push such a tag, create or publish a GitHub Release, or publish."
 argument-hint: "[agent | connector | artifact | skill | workflow] [name]"
 allowed-tools:

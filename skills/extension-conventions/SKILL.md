@@ -1,5 +1,6 @@
 ---
 name: extension-conventions
+user-invocable: false
 description: "Apply the conventions for authoring or integrating a cinatra extension, reconciled to the current architecture (one repo per extension; five kinds — agent/connector/artifact/skill/workflow, with workflow scheduled for removal under cinatra#1030; scaffolded by `cinatra create-extension <kind>` from the published @cinatra-ai/cinatra CLI; the package.json#cinatra manifest). Activates for: 'lock-pin choreography', 'required extension lock equality', 'system extension lock equality', 'create-cinatra-extension', 'cinatra create-extension', 'package.json#cinatra', 'connector manifest shape', 'agent manifest shape', 'artifact manifest shape', 'companion merge choreography', 'seed the transitive required closure', 'extension repo conventions'. Pins ride the same core PR as the manifest; cinatra.extensions == cinatra.systemExtensions == cinatra-required-extensions.lock.json is untouchable; the rolling dev-lock auto-bump is never manually relocked; a connector without a package-root cinatra/config.json access declaration hard-fails submit and install; seed the transitive required-closure before boot or the app crashes."
 argument-hint: "[connector | agent | artifact | skill | workflow]"
 allowed-tools:

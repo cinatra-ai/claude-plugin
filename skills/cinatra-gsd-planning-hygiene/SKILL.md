@@ -1,5 +1,6 @@
 ---
 name: cinatra-gsd-planning-hygiene
+user-invocable: false
 description: "Apply the cinatra org GSD-usage and planning-hygiene rules. Activates for: 'GSD planning hygiene', 'keep .planning local', 'planning artifacts stay untracked', 'no planning/provenance tokens in commits', 'milestone naming', 'run a completeness sweep', or any cinatra planning-hygiene question. Planning artifacts are strictly local + gitignored + never pushed; no planning/provenance token (planning-folder paths, build-stage ordinals, requirement/task ids, roadmap/state/spec refs, milestone version strings) ever leaks into committed code, comments, commit messages, branch names, or PR titles; the loop never runs the autonomous or complete-milestone commands and keeps a milestone open. Includes the pre-build completeness sweep with adversarial Codex validation."
 when_to_use: "Trigger phrases: \"planning hygiene\", \"gsd planning hygiene\", \"gsd hygiene\", \"keep .planning local\", \".planning local\", \"planning artifacts local\", \"planning artifacts untracked\", \"planning provenance tokens\", \"provenance tokens\", \"milestone naming\", \"completeness sweep\"."
 argument-hint: "[--completeness-sweep]"
