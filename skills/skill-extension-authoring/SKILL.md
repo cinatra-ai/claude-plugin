@@ -1,5 +1,6 @@
 ---
 name: skill-extension-authoring
+user-invocable: false
 description: "Author a cinatra SKILL extension — a product skill bundle that ships SKILL.md content into the cinatra app for its agents to load (NOT a Claude Code plugin skill): the skills/<name>/SKILL.md payload with one directory per capability, the cinatra.capabilities map binding stable capability keys to co-located skill dirs, optional metadata.match_when agent binding, and the @<scope>/<slug>-skills naming policy. Activates for: 'author a skill extension', 'cinatra skill bundle', 'product skill bundle', 'cinatra.capabilities map', 'match_when agent binding', 'skills bundle naming', 'vendored skill bundle'. Payload is content-only (the files list ships only skills/, no src/); inner slugs are verb-noun; capabilities is enforced host-side at install, NOT by the local vendored gate — treat it as mandatory anyway; scope is first-party or the vendored allowlist, and a vendored bundle declares cinatra.vendoredFrom and keeps its upstream name."
 argument-hint: "[<bundle-slug> | capabilities | match_when | naming]"
 allowed-tools:

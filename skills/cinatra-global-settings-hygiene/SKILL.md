@@ -1,5 +1,6 @@
 ---
 name: cinatra-global-settings-hygiene
+user-invocable: false
 description: "The POLICY for machine-global agent configuration in the cinatra org: settings live in the global Claude config (~/.claude/settings.json), NOT per-repo; no per-repo .claude/ in active repos; workspace artifacts (scratch, screenshots, browser-automation output, worktrees) go under the org .claude/ folder. Activates for: 'where do Claude settings live', 'global settings policy', 'settings hygiene policy', 'per-repo .claude', 'centralize claude settings', 'workspace artifacts under org .claude'. Boundary: this owns the agent-config POLICY; cinatra-doctor / setup own the machine-level ENFORCEMENT (verify + apply the exact diffs); repo/org GOVERNANCE levers (org rulesets, admin-bypass, tags, archived repos) belong to your org's repo-governance conventions. Cross-link, no overlap."
 when_to_use: "Trigger phrases: \"where do claude settings live\", \"global settings policy\", \"settings hygiene policy\", \"per-repo .claude\", \"centralize claude settings\", \"workspace artifacts under org .claude\"."
 argument-hint: "[settings | artifacts]"

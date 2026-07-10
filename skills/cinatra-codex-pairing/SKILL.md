@@ -1,5 +1,6 @@
 ---
 name: cinatra-codex-pairing
+user-invocable: false
 description: "Converge a cinatra plan or change with Codex before finalizing. Activates for: 'converge with codex', 'codex round-0 / review', 'pair with codex', running 'codex exec', 'is this MERGE-SAFE', or before finalizing any cinatra plan/diff. Codex inspects the SAME ground truth as the author — the real repo/worktree/files and the exact diff against a pinned base SHA — never a fed summary/subset, and grounds independently to form its own opinion. Codex runs read-only via STDIN only (argv hangs); the verdict is captured to a file (never tail-piped) together with the source it inspected; at most 3 diff rounds; report divergence honestly."
 argument-hint: "[--round-0 | --review]"
 allowed-tools:

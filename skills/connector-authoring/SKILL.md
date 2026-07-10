@@ -1,5 +1,6 @@
 ---
 name: connector-authoring
+user-invocable: false
 description: "Author a production-shape cinatra CONNECTOR extension: scope declaration, UI surface, server entry, host ports, manifest, migrations decision. Activates for: 'author a connector', 'new cinatra connector', 'connector access scope', 'cinatra/config.json', 'connector setup page', 'schema-config vs bundled-react', 'requestedHostPorts', 'connector register(ctx)', 'connector migrations'. Load-bearing rules: package-root cinatra/config.json is MANDATORY — absence hard-fails BOTH marketplace submit and install (cinatra#955); scope tokens are lowercase user|project|team|organization|workspace|admin with exactly ONE of default XOR only; cinatra.visibility is DELETED for connectors — its presence is a validation error even though older vendored gate copies still accept it; register(ctx) is registration-only with TYPE-ONLY SDK imports (values arrive via ctx, host services resolved lazily); requestedHostPorts is least-privilege from the 14-port vocabulary and changing the list resets the grant to pending; the CLI connector template lags the fleet — write cinatra/config.json yourself immediately after scaffolding and study plane/twenty as the archetypes."
 argument-hint: "[<vendor>/<slug>-connector | scope | ui | ports | migrations]"
 allowed-tools:

@@ -1,5 +1,6 @@
 ---
 name: cinatra-renovate-handling
+user-invocable: false
 description: "Handle a Renovate (or dependency) PR on a cinatra-ai repo correctly. Activates for: 'a renovate PR', 'this dependency PR', 'bump this dependency', 'update the lockfile', 'a dependabot PR', or a dependency-update PR. The windows: an onboarding/config-only Renovate PR may land any time; routine dependency PRs wait for the weekly window (early Monday, Berlin time); security/vulnerability updates are allowed outside the window; serialize a dep PR behind any active lane on the same repo; never manually bump a rolling dev/required lock — its auto-bump absorbs tip drift."
 when_to_use: "Trigger phrases: \"renovate pr\", \"a renovate pr\", \"this dependency pr\", \"bump this dependency\", \"update the lockfile\", \"dependabot pr\", \"dependency update pr\", \"renovate window\"."
 argument-hint: "[<owner/repo#N> | <dependency>]"

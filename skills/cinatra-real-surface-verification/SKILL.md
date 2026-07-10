@@ -1,5 +1,6 @@
 ---
 name: cinatra-real-surface-verification
+user-invocable: false
 description: "Prove a cinatra change works on the REAL surface — a real browser (Playwright) for UI, the real MCP tools for integrations, a real authenticated end-to-end run against seeded fixtures — never a stub or a hand-waved 'should work'. Activates for: 'verify on the real surface', 'real surface verification', 'playwright real surface', 'real mcp verification', 'seeded e2e verification', 'prove the change on the running app', 'check the audit via'. A green stub can mask a real boot crash (3 deterministic failures = a real bug, not a flake); a content-write proof authorized by an admin bypass is NOT production parity — check the audit `via:`. References (does not restate) the shared verify-stack recipe; bringing the stack UP is cinatra-dev-tools's job."
 when_to_use: "Trigger phrases: \"verify on the real surface\", \"real surface verification\", \"playwright real surface\", \"real mcp verification\", \"seeded e2e verification\", \"prove the change on the running app\", \"check the audit via\", \"stub masks a boot crash\"."
 argument-hint: "[ui | tools | e2e]"

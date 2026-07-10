@@ -1,5 +1,6 @@
 ---
 name: artifact-authoring
+user-invocable: false
 description: "Author a cinatra ARTIFACT extension — a metadata-only content-TYPE definition with no runtime code: the strict package.json#cinatra key allowlist {kind, apiVersion, artifact, dependencies, roles}, the full cinatra.artifact descriptor (accepts, satisfies, templates, skills facets, agentDependencies, matcherConfidenceThreshold), the typed SemanticArtifactManifest mirror in src/index.ts, and the paired matcher skill. Activates for: 'author an artifact extension', 'new artifact type', 'cinatra.artifact descriptor', 'artifact manifest allowlist', 'artifact matcher skill', 'matcher confidence threshold', 'semantic artifact manifest'. Naming is @cinatra-ai/<slug>-artifact (first-party locked); the slug names the CONTENT, never the producer; accepts requires at least one of file.mimeTypes / connectorRef.resolvedMimeTypes / dashboard true; skills facets take skills-catalog ids of the form '@<pkg>:<skill-dir>', never a path or .md ref; reuse an existing artifact type before inventing a new one."
 argument-hint: "[<content-slug> | descriptor | matcher | templates]"
 allowed-tools:
