@@ -73,9 +73,25 @@ there is exactly one definition.
 
 ## Discipline (non-negotiable)
 
-- Codex runs **read-only** and **advisory**.
-- Invoke via **STDIN only**: `codex exec --skip-git-repo-check < prompt.txt`.
-  Passing the prompt as an argv **hangs** — never do it.
+- Codex runs **read-only** and **advisory** — the bridge pins `-s read-only`
+  (`codex exec` defaults to a **writable** sandbox), so a convergence round can
+  never write to the worktree it is reviewing.
+- Invoke via **STDIN only**, and always through the bridge
+  (`buildCodexArgs`/`runCodex` in `bin/lib/codex-bridge.cjs`), which pins the
+  sandbox, model, and reasoning effort:
+  `codex exec --strict-config --skip-git-repo-check -s read-only -m gpt-5.6-sol -c model_reasoning_effort=max < prompt.txt`.
+  Passing the prompt as an argv **hangs** — never do it. The model tracks the
+  **latest Codex** — currently GPT-5.6 "sol" (`gpt-5.6-sol`), resolved from the
+  installed CLI, not a frozen guess — at **maximum reasoning effort**
+  (`model_reasoning_effort=max`: the CLI's model catalog lists this model's
+  levels as low/medium/high/xhigh/max/ultra, and `max` is the highest pure
+  reasoning tier — `ultra` adds automatic task delegation, which would break the
+  read-only, single-verdict, bounded-round contract, so `max` is pinned). Both flags are
+  **always applied** under `--strict-config`, never left to the CLI default. If
+  the installed CLI rejects the pinned model or effort — an invalid effort
+  *value*, or (thanks to `--strict-config`) an unrecognized config *key* such as
+  a future rename of `model_reasoning_effort` — the round **fails visibly**
+  (non-zero exit → `ok:false`) rather than silently downgrading to the default.
 - **Capture** the verdict to a file; **never** tail-pipe it (a tail-piped or
   filename-collided run is not a captured verdict).
 - At most **3** diff rounds. Adopt or rebut each finding; fold adoptions into the
@@ -130,14 +146,27 @@ convergence**, however green it reads.
 
 ## Mechanics
 
-The pack ships a bridge so the discipline cannot drift to a hanging argv call:
+The pack ships a bridge so the discipline cannot drift to a hanging argv call —
+and so every convergence round carries an explicit, auditable model + reasoning
+effort:
 
 ```sh
 node "$HOME/.claude/dev-core/bin/lib/codex-bridge.cjs"   # buildCodexArgs / runCodex
 ```
 
-`runCodex({ prompt, outputFile })` feeds the prompt on STDIN and writes the
-combined output to `outputFile` (capture-not-tail).
+`buildCodexArgs()` always emits the pinned `-s read-only`, `-m <model>`, and
+`-c model_reasoning_effort=<effort>` flags — the latest Codex model (currently
+`gpt-5.6-sol`) at `max`, the maximum reasoning tier, in a read-only sandbox —
+under `--strict-config`, never falling back to the CLI default (which is a
+*writable* sandbox). A caller's `extraArgs` cannot escalate the sandbox or
+override the pins — a last-write-wins override is rejected. `runCodex({ prompt, outputFile })` feeds the
+prompt on STDIN, writes the combined output to `outputFile` (capture-not-tail)
+with a header recording the pinned model + effort, and returns
+`{ ok, code, model, reasoningEffort, … }` so the captured verdict is attributable
+to a specific model and effort. A pinned model or effort the installed CLI
+rejects — an invalid effort value, or an unrecognized config key (`--strict-config`
+turns a silently-ignored key into a hard error) — surfaces as `ok:false` (a
+visible failure), never a silent downgrade.
 
 ## Issue-body mode (converge the issue TEXT, not a plan or diff)
 
