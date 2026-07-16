@@ -25,6 +25,12 @@ skill; per-kind payload doctrine lives in the kind specialists. Drive it end to 
    - kind, name, description, display name (always);
    - npm scope ONLY for `connector` (any vendor scope) and `skill` (first-party or the
      vendored allowlist) — `agent` and `artifact` are locked first-party, never ask;
+   - artifact extras: whether the type should **ship its own renderer** (the opt-in
+     `cinatra.artifact.ui` block, epic cinatra#1620) — default NO (declarative-only, the
+     common case); if YES, which slots (`detail` and/or `preview`) and, for `preview`, the
+     MIME representations it renders. A renderer is a port-less RSC component that renders
+     from a host-supplied snapshot and composes VENDORED `@cinatra-ai` primitives — it adds
+     a React toolchain delta and an `sdk-ui` optional peer;
    - connector extras: the access-scope token (`user | project | team | organization |
      workspace | admin`) plus whether it is a changeable `default` or a server-enforced
      `only`; the UI surface choice (`schema-config` declared as data vs `bundled-react`
@@ -34,9 +40,17 @@ skill; per-kind payload doctrine lives in the kind specialists. Drive it end to 
    CLI (fallback: `npx @cinatra-ai/cinatra@latest create-extension …`):
    `cinatra create-extension <kind> <name> --scope <scope> --display-name "<dn>"
    --description "<desc>" --dir <parent> --yes` (add `--force` only for a deliberate
-   re-scaffold into a non-empty directory). Exit code 2 means a usage or validation error
-   (bad kind, missing name, slug or scope rejection) — fix the inputs and re-run; never fall
-   back to the CLI's interactive prompts.
+   re-scaffold into a non-empty directory). For an artifact whose author opted into a
+   renderer: the opt-in ui scaffolder template (`--with-ui`) — which emits the
+   `cinatra.artifact.ui` block, an RSC renderer stub per chosen slot under
+   `src/renderers/`, the renderer entry in `files` (and an `exports` subpath), the React
+   toolchain delta, the `sdk-ui` optional peer, and the GENERATED `sdkAbiRange` — lands
+   with the first renderer wave (S4) and is first-party-locked until an external-vendor
+   publishing phase exists. Until it lands, hand back to `artifact-authoring` to add the
+   `ui` block and renderer by hand; do not pass a `--with-ui` flag that the installed CLI
+   does not yet support. Exit code 2 means a usage or validation error (bad kind, missing
+   name, slug or scope rejection) — fix the inputs and re-run; never fall back to the CLI's
+   interactive prompts.
 5. **Connector reconciliation — first-class, never skipped.** For kind `connector`, write
    `cinatra/config.json`: the file is MANDATORY (an absent file hard-fails at both submit
    and install, cinatra#955). It must declare `formatVersion` exactly 1 and exactly ONE of

@@ -1,8 +1,8 @@
 ---
 name: extension-boundary
 user-invocable: false
-description: "Enforce the extension<->core BOUNDARY for cinatra extensions: every rule stated with its enforcing CI gate (repo-relative path in cinatra-ai/cinatra) and what failing looks like. Activates for: 'extension core boundary', 'extension import ban', 'host-peer value import', 'requestedHostPorts grant', 'coupling baseline pinned empty', 'lock equality gate', 'sdk abi byte pin', 'run the extension kind gate', 'can core reference my extension', 'serverEntry import graph'. Host capability ONLY via register(ctx) ports and call-time host services — never @/ imports, never another extension, SDK peers optional-peer-only and type-only over the serverEntry graph; core never imports or even NAMES an extension (generator output is the sole byte-pinned surface; all four coupling baselines are pinned EMPTY); cinatra.extensions == cinatra.systemExtensions == cinatra-required-extensions.lock.json; reproduce locally with node extension-kind-gate.mjs --package-root . plus npm pack --dry-run."
-argument-hint: "[imports | core-coupling | locks | sdk-fence | reproduce]"
+description: "Enforce the extension<->core BOUNDARY for cinatra extensions: every rule stated with its enforcing CI gate (repo-relative path in cinatra-ai/cinatra) and what failing looks like. Activates for: 'extension core boundary', 'extension import ban', 'host-peer value import', 'requestedHostPorts grant', 'coupling baseline pinned empty', 'lock equality gate', 'sdk abi byte pin', 'run the extension kind gate', 'can core reference my extension', 'serverEntry import graph', 'artifact renderer boundary', 'cinatra.artifact.ui ports', 'generated artifact renderers map', 'core treats type identity as opaque'. Host capability ONLY via register(ctx) ports and call-time host services — never @/ imports, never another extension, SDK peers optional-peer-only and type-only over the serverEntry graph; core never imports or even NAMES an extension (generator output is the sole byte-pinned surface — including the GENERATED_ARTIFACT_RENDERERS map; all four coupling baselines are pinned EMPTY); an artifact extension ships its type's VIEW through the port-less cinatra.artifact.ui block (v1 renderers request no host ports; core treats type identity as opaque); cinatra.extensions == cinatra.systemExtensions == cinatra-required-extensions.lock.json; reproduce locally with node extension-kind-gate.mjs --package-root . plus npm pack --dry-run."
+argument-hint: "[imports | core-coupling | locks | sdk-fence | artifact-renderer | reproduce]"
 allowed-tools:
   - Read
   - Bash
@@ -17,6 +17,9 @@ triggers:
   - "run the extension kind gate"
   - "can core reference my extension"
   - "serverentry import graph"
+  - "artifact renderer boundary"
+  - "cinatra.artifact.ui ports"
+  - "generated artifact renderers map"
 antiTriggers:
   - "claude code plugin"
   - "browser extension"
@@ -99,6 +102,46 @@ universe is pinned, and how to reproduce each gate locally. Narrative reference:
   `scripts/audit/connector-access-config-gate.mjs` and
   `scripts/audit/connector-access-policy-write-gate.mjs`. Failing looks like:
   rejection naming the missing config file or the forbidden key.
+
+## Artifact-renderer channel (extension-shipped UI, cinatra#1620)
+
+- **An artifact extension may ship its type's VIEW — through data, not a host
+  edge.** The versioned `cinatra.artifact.ui` block declares `detail`/`preview`
+  renderers (RSC components). Core owns dispatch, the shell, and the never-blank
+  floor; the extension owns its type's view. This does NOT relax the boundary:
+  a **v1 renderer requests NO host ports** — it renders only from a host-supplied,
+  already-access-checked, **serializable** props snapshot (canonical shape
+  `src/lib/artifacts/artifact-renderer-props.ts`); no ctx, no DB handle, no
+  server-action closure crosses. Any extra key on a renderer (a `ports` request)
+  is rejected by the leaf schema `.strict()`.
+- **Renderers are wired through the GENERATED map, not a core reference.** The
+  build-known renderers resolve through `src/lib/generated/artifact-renderers.ts`
+  (the `GENERATED_ARTIFACT_RENDERERS` literal-import map — the same
+  generated-maps-only surface the connector setup pages use), regenerated and
+  byte-pinned by `node scripts/extensions/generate-extension-manifest.mjs --check`.
+  A runtime-installed claimant not yet in the build renders generically with
+  "requires rebuild" — never a hand-written core import of your package.
+- **The `ui` block is gate-validated fail-closed at publish.** The extension-repo
+  conformance gate (`scripts/extensions/conformance-gate.mjs`, `checkArtifactUi`)
+  asserts `abiVersion == 1`, `sdkAbiRange` equals the GENERATED value, a non-empty
+  `renderers` map over the closed `{detail, preview}` enum (reserved
+  `listRow`/`card`/`inline` rejected), each `entry` contained + resolvable +
+  inside `files`, `propsApiVersion` an integer ≥ 1, and NO extra key. At boot the
+  same block degrades-with-diagnostic (never dropping the type's registration or
+  claims). Reproduce with `node extension-kind-gate.mjs --package-root .` plus the
+  conformance run.
+
+## Core treats type identity as OPAQUE (the boundary predicate)
+
+Core must never key type-specific presentation off a concrete type id or
+representation form. The violation predicate (epic cinatra#1620 boundary gates,
+S6): any production-core dependency / lookup / import / transform keyed by a
+concrete type id or representation form for type-specific presentation. Core
+resolves renderers through the generated map + the org-scoped arbitration
+registries (`src/app/artifacts/[id]/renderer-resolution.ts`) using EFFECTIVE
+IDENTITY, treating the id as opaque; the type's view lives in the type's own
+extension. Do not open (or request) a core change that special-cases your type
+id — ship the view in your `cinatra.artifact.ui` block instead.
 
 ## Core -> extension: why you never ask core to reference you
 
