@@ -40,11 +40,13 @@ per-kind doctrine in the kind specialists. Run every stage; do not stop at the f
    conformance gate `scripts/extensions/conformance-gate.mjs` `checkArtifactUi` is the
    authority):
    - `ui` nests inside `cinatra.artifact` (NOT a top-level `cinatra` key); shape is
-     `{ abiVersion, sdkAbiRange, renderers }` with no extra keys;
+     `{ abiVersion, sdkAbiRange, renderers?, registryItems? }` with no extra keys — since
+     cinatra#1623 (S5) both `renderers` and `registryItems` are OPTIONAL, but at least one
+     of the two must be non-empty;
    - `abiVersion` is exactly `1`; `sdkAbiRange` is the GENERATED value (never hand-written)
      — flag any hand-edited range;
-   - `renderers` is a non-empty map over the closed v1 slot enum `{detail, preview}`
-     (reserved `listRow`/`card`/`inline` are rejected in v1);
+   - `renderers`, when present, is a non-empty map over the closed v1 slot enum
+     `{detail, preview}` (reserved `listRow`/`card`/`inline` are rejected in v1);
    - each renderer is `{ entry, propsApiVersion, representations? }` and NOTHING else — a
      `ports`/`requestedHostPorts` request or any extra key means a v1 renderer is illegally
      asking for host access (v1 renderers request NO host ports);
@@ -53,6 +55,23 @@ per-kind doctrine in the kind specialists. Run every stage; do not stop at the f
    - `propsApiVersion` is an integer ≥ 1;
    - the renderer source composes VENDORED `@cinatra-ai` primitives by relative import and
      imports no host internal (`@/…`) and no ad-hoc UI library.
+
+   If the `ui` block declares `registryItems` (cinatra#1623 S5), audit those too
+   (`checkArtifactUiRegistryItems` is the authority) — note `renderers` is now OPTIONAL, so
+   a `ui` block may carry `registryItems` alone, but at least one of the two must be
+   non-empty:
+   - each item carries ONLY `{ name, entry, type, description }` — any extra field
+     (e.g. a declared `dependencies`/`registryDependencies`) is a presentational-boundary
+     violation (npm + registry deps are extracted from the item SOURCE by the publish
+     pipeline, never declared);
+   - `name` is a strict-lowercase `<component>` token (`[a-z0-9]`, hyphen-joined), unique
+     within the manifest;
+   - `entry` is a package-relative, path-contained subpath resolving to a real file inside
+     the `files` packlist;
+   - `type` is one of `{ registry:ui, registry:lib }`; `description` is non-empty;
+   - the item SOURCE is presentational-only — imports only public npm + other registry
+     items, never a host internal (`@/…`), an auth context, or a data-fetch. Route deeper
+     registry-identity/serving questions to the `registry-authoring` skill.
    A declarative-only artifact (no `ui` block) skips this stage — that is a valid shape.
 5. Invoke the **`extension-boundary`** skill (full sweep) for the IoC audit: host-import
    bans, type-only SDK imports over the serverEntry graph, optional-peer discipline, the

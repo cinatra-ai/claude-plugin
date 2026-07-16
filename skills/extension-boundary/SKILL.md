@@ -130,6 +130,18 @@ universe is pinned, and how to reproduce each gate locally. Narrative reference:
   same block degrades-with-diagnostic (never dropping the type's registration or
   claims). Reproduce with `node extension-kind-gate.mjs --package-root .` plus the
   conformance run.
+- **`registryItems` is the OTHER sanctioned presentational surface (cinatra#1623,
+  S5) — consumer-executed source, not a host edge.** The same versioned block may
+  also declare `cinatra.artifact.ui.registryItems` (`{name, entry, type,
+  description}`) — presentational shadcn components the extension PUBLISHES to the
+  shared registry. Like a renderer this does NOT relax the boundary and is NOT
+  host-executed: a registry item is source COPIED by `shadcn add` into a
+  consumer's tree, so it may import ONLY public npm packages + other registry
+  items — never a host internal (`@/…`), an auth context, or a data-fetch. Its
+  `.strict()` shape carries no dependency declaration (npm + registry deps are
+  extracted from the item SOURCE by the publish pipeline). The author-facing
+  contract — the `@<namespace>/<slug>-<component>` identity, digest-pinned serving,
+  tombstoning — belongs to the `registry-authoring` skill.
 
 ## Core treats type identity as OPAQUE (the boundary predicate)
 
