@@ -17,8 +17,9 @@ or with Cinatra. The skills cover:
 - **Local dev/verify stack** — bring up the local Cinatra stack for testing.
 - **Extension development** — scaffold, author, validate, and audit a Cinatra
   extension end to end: a core lifecycle skill, one specialist skill per active
-  extension kind (agent, connector, artifact, skill), the extension ↔ core
-  boundary doctrine, and two slash commands that drive them.
+  extension kind (agent, connector, artifact, skill), a design-registry item
+  authoring specialist, the extension ↔ core boundary doctrine, and two slash
+  commands that drive them.
 - **Extension authoring conventions** — the rules for building, pinning, and
   integrating a Cinatra extension.
 - **Domain gotchas** — per-repo traps that have cost real rework.
@@ -199,6 +200,7 @@ skill itself still stays `user-invocable: false`.
 | `connector-authoring` | Connector specialist: the mandatory `cinatra/config.json` access scope (lowercase tokens, `default` XOR `only`, protected slugs), UI surfaces (`schema-config` vs `bundled-react`), registration-only `register(ctx)` with type-only SDK imports, least-privilege host ports, the migrations decision, current fleet archetypes. | You're authoring or reviewing a Cinatra connector. |
 | `agent-authoring` | Agent specialist: the three-file package (OpenAgentSpec flow, system-prompt SKILL.md, manifest), the type decision table, declarative HITL, orchestrator composition, the 8 cross-cutting OAS rules, llm-bridge and object-envelope runtime contracts, dual version bump. | You're authoring or reviewing a Cinatra agent extension. |
 | `artifact-authoring` | Artifact specialist: a declarative-by-default content-TYPE definition that MAY ship its own port-less `detail`/`preview` renderer via the `cinatra.artifact.ui` block — the strict manifest key allowlist, the full `cinatra.artifact` descriptor contract, the typed mirror, the paired matcher skill with confidence bands, and the RSC renderer contract (no host ports, serializable host snapshot, vendored primitives). | You're authoring or reviewing a Cinatra artifact extension. |
+| `registry-authoring` | Design-registry specialist: contributing an extension's own presentational shadcn components via `cinatra.artifact.ui.registryItems` — the strict `{ name, entry, type, description }` declaration, the presentational-only import rule (consumer-executed source; public npm + other registry items only), the `@<namespace>/<slug>-<component>` vendor identity, and the digest-pinned publish/serving/tombstone contract. | You're declaring or reviewing an extension's own registry items (publishing to the shared design registry). |
 | `skill-extension-authoring` | Skill-bundle specialist: `skills/<name>/SKILL.md` payload (one dir per capability), the `cinatra.capabilities` map (host-enforced), `metadata.match_when` agent binding, `-skills` naming and the vendored-scope policy. NOT for Claude Code plugin skills. | You're authoring or reviewing a Cinatra product skill bundle. |
 | `extension-boundary` | The extension ↔ core boundary: every gate-enforced rule (import bans, type-only SDK peers, optional-peer discipline, pinned-empty core coupling baselines, the lock equality invariant, the SDK surface fence, the artifact-renderer channel + opaque-identity core rule) with its enforcing gate and the local reproduction commands. | Your extension change touches anything that crosses (or must not cross) the host boundary, or a boundary gate went red. |
 | `domain-gotchas` | Per-repo domain traps that have cost real rework: design-repo asset/spec conformance, reusable release CI, schema-migration fixture re-apply, Next.js cold-compile staleness, browser-URL vs container-URL, CodeQL false-positive dismissal, the docs-repo convention, real-host CLI testing, and more. | Before touching a repo with a known non-obvious trap, or when something behaves unexpectedly in a way that looks environmental. |

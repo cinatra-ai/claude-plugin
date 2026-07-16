@@ -30,7 +30,12 @@ skill; per-kind payload doctrine lives in the kind specialists. Drive it end to 
      common case); if YES, which slots (`detail` and/or `preview`) and, for `preview`, the
      MIME representations it renders. A renderer is a port-less RSC component that renders
      from a host-supplied snapshot and composes VENDORED `@cinatra-ai` primitives — it adds
-     a React toolchain delta and an `sdk-ui` optional peer;
+     a React toolchain delta and an `sdk-ui` optional peer. Also ask whether the extension
+     should **contribute its own registry items** (declaring
+     `cinatra.artifact.ui.registryItems`, cinatra#1623 S5) — default NO; these are
+     presentational-only shadcn components published to the shared registry (a separate
+     capability from a renderer, independent of it) and route payload authoring to the
+     `registry-authoring` skill;
    - connector extras: the access-scope token (`user | project | team | organization |
      workspace | admin`) plus whether it is a changeable `default` or a server-enforced
      `only`; the UI surface choice (`schema-config` declared as data vs `bundled-react`
@@ -62,8 +67,10 @@ skill; per-kind payload doctrine lives in the kind specialists. Drive it end to 
    --package-root .` then `npm pack --dry-run`. Both must pass before hand-off.
 7. Hand payload authoring to the kind specialist — **`connector-authoring`**,
    **`agent-authoring`**, **`artifact-authoring`**, or **`skill-extension-authoring`** —
-   with the collected intent. Conventions and lock/companion choreography questions defer
-   to **`extension-conventions`**.
+   with the collected intent. For an artifact that contributes its own registry items,
+   `artifact-authoring` routes on to **`registry-authoring`** for the
+   `cinatra.artifact.ui.registryItems` payload. Conventions and lock/companion
+   choreography questions defer to **`extension-conventions`**.
 8. Report: the scaffolded path and package name; what was validated (the connector config
    check, the kind gate, the pack dry-run) with each result; and the explicit NOT-done
    list — no repository was created, no tag was pushed, nothing was published. A pushed

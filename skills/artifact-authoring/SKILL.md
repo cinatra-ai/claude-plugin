@@ -202,8 +202,9 @@ cinatra-ai/cinatra.
   (`scripts/extensions/vendor-extension-primitives.mjs` in cinatra-ai/cinatra
   vendors them; the pinned CLI is `pnpm dlx shadcn@4.8.2`, never `@latest`).
   **Never** pull an ad-hoc UI library, and **never** import a host internal (`@/…`)
-  or another extension. Declaring your OWN registry items (`registryItems`) is a
-  separate capability that lands with S5 and has its own registry-authoring skill.
+  or another extension. Declaring your OWN registry items (`registryItems`) —
+  publishing your own presentational components to the shared registry — is a
+  separate capability with its own `registry-authoring` skill.
 - **Failure isolation + "requires rebuild".** Renderers are build-known, wired
   through a generated literal-import map — until your extension is in the base
   image build its renderer is not wired, so the type renders **generically** with a
@@ -249,8 +250,8 @@ cinatra-ai/cinatra.
   vendored-primitives rules; a declarative-only artifact ships no renderer, so most
   boundary rules are moot, but the common gate rules still run.
 - Declaring your OWN `registryItems` (publishing shadcn registry components) —
-  the extensible design-registry authoring contract lands with S5 and has its own
-  registry-authoring skill.
+  the extensible design-registry authoring contract — belongs to the
+  `registry-authoring` skill.
 - Release doctrine (restated because authors hit it): a pushed tag equal to
   `v<package.json.version>` — or, on newer workflow generations, the published
   GitHub Release carrying it — IS the publish trigger (marketplace submit);
