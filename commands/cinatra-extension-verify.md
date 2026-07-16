@@ -34,16 +34,36 @@ per-kind doctrine in the kind specialists. Run every stage; do not stop at the f
    - protected slugs `openai`, `anthropic`, `gemini` declare `only:"admin"`;
    - package.json carries NO `cinatra.visibility` key — for connectors its presence with
      any value is a validation error, even where an older vendored gate still accepts it.
-4. Invoke the **`extension-boundary`** skill (full sweep) for the IoC audit: host-import
-   bans, type-only SDK imports over the serverEntry graph, optional-peer discipline, and
-   the README and license contracts. That skill owns the rules — do not restate or
-   shortcut them here.
-5. Run the kind specialist's checklist against the payload — **`connector-authoring`**,
+4. **Artifact `cinatra.artifact.ui` audit — first-class when present** (epic cinatra#1620
+   S1/S2). For kind `artifact`, if the descriptor declares `cinatra.artifact.ui`, verify
+   the renderer block directly (the vendored kind gate may predate it; the extension-repo
+   conformance gate `scripts/extensions/conformance-gate.mjs` `checkArtifactUi` is the
+   authority):
+   - `ui` nests inside `cinatra.artifact` (NOT a top-level `cinatra` key); shape is
+     `{ abiVersion, sdkAbiRange, renderers }` with no extra keys;
+   - `abiVersion` is exactly `1`; `sdkAbiRange` is the GENERATED value (never hand-written)
+     — flag any hand-edited range;
+   - `renderers` is a non-empty map over the closed v1 slot enum `{detail, preview}`
+     (reserved `listRow`/`card`/`inline` are rejected in v1);
+   - each renderer is `{ entry, propsApiVersion, representations? }` and NOTHING else — a
+     `ports`/`requestedHostPorts` request or any extra key means a v1 renderer is illegally
+     asking for host access (v1 renderers request NO host ports);
+   - each `entry` is a package-relative, path-contained subpath that resolves to a real
+     file INSIDE the `files` packlist (else the tarball omits it);
+   - `propsApiVersion` is an integer ≥ 1;
+   - the renderer source composes VENDORED `@cinatra-ai` primitives by relative import and
+     imports no host internal (`@/…`) and no ad-hoc UI library.
+   A declarative-only artifact (no `ui` block) skips this stage — that is a valid shape.
+5. Invoke the **`extension-boundary`** skill (full sweep) for the IoC audit: host-import
+   bans, type-only SDK imports over the serverEntry graph, optional-peer discipline, the
+   artifact-renderer channel, and the README and license contracts. That skill owns the
+   rules — do not restate or shortcut them here.
+6. Run the kind specialist's checklist against the payload — **`connector-authoring`**,
    **`agent-authoring`**, **`artifact-authoring`**, or **`skill-extension-authoring`**.
    For kind `workflow`, still audit what exists but flag that the kind is scheduled for
    removal (cinatra#1030). Conventions and lock/companion choreography questions defer to
    **`extension-conventions`**.
-6. Release-readiness checks (report-only):
+7. Release-readiness checks (report-only):
    - version vs tag parity: the package.json `version` is strict semver and no tag equal
      to `v<package.json.version>` already exists — pushing such a tag (or, on newer
      workflow generations, publishing the GitHub Release that carries it) IS the publish
@@ -52,7 +72,7 @@ per-kind doctrine in the kind specialists. Run every stage; do not stop at the f
      the `cinatra/` directory for connectors) and leaks no CI, gate, or internal files;
    - dependency edges: every `cinatra.dependencies[]` entry is well-formed, its `kind`
      matches the target's actual kind, and version constraints are exact-pinned.
-7. Report a per-stage pass/fail summary with every finding and its fix direction, then
+8. Report a per-stage pass/fail summary with every finding and its fix direction, then
    state explicitly that NO release act was performed. NEVER push a tag matching
    `v<package.json.version>`, create or publish a GitHub Release, or publish
    autonomously — this
