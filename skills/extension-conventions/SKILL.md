@@ -117,7 +117,11 @@ field set against the live SDK packages + the CLI scaffolder at authoring time.
   (`kind`, `apiVersion`, `artifact`, `dependencies`, `roles` — no `cinatra.oas`).
   The content-type slug names the CONTENT (not the producer); pair a matcher skill
   with an author skill; do not ship an agent payload from an artifact repo; reuse
-  an existing artifact rather than abstracting prematurely.
+  an existing artifact rather than abstracting prematurely. A **per-connector
+  artifacts pack** that claims a connector platform's typed rows uses the plural
+  `<platform>-artifacts` suffix and an `artifact.objectTypes[]` claims block (each
+  claim a self-contained JSON Schema + a `dispositions.mutability` class); the
+  `artifact-authoring` skill carries the full contract.
 - **skill** — `capabilities` (a `{ "domain.action": "skill-slug" }` map). Theme the
   bundle by its consumer, use a verb-noun inner slug, and respect the
   workspace-visible vs system-visible distinction. Author it as a DEV process that
