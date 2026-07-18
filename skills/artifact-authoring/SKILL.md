@@ -75,7 +75,10 @@ gate (`scripts/extensions/conformance-gate.mjs`, `checkArtifactUi`).
   reads as an actor or a tool, rename it.
 - **Naming is first-party locked**: `@cinatra-ai/<slug>-artifact` — the gate's
   name check accepts no other scope, and the scaffolder offers no scope choice
-  for this kind (unlike connector and skill).
+  for this kind (unlike connector and skill). A multi-type **per-connector
+  artifacts pack** uses the plural `@cinatra-ai/<platform>-artifacts` suffix (the
+  name validator accepts both `-artifact` and `-artifacts`); see [Per-connector
+  artifacts packs](#per-connector-artifacts-packs-objecttypes-claims-mutability-atomicity).
 - **Reuse before inventing.** Search existing artifact types first; a new type is
   only justified when no existing `accepts`/`satisfies` surface fits. Study the
   public exemplars `blog-post-artifact` and `marketing-icp-artifact` before
@@ -131,8 +134,83 @@ gate (`scripts/extensions/conformance-gate.mjs`, `checkArtifactUi`).
 - **`matcherConfidenceThreshold`** (optional) — a number between 0 and 1
   (exemplars use `0.7`); a matcher verdict below it does not bind.
 - **`ui`** (optional) — the versioned renderer block; see the next section.
+- **`objectTypes`** (optional) — a **claims** block: an array of typed-row claims
+  a per-connector artifacts pack owns. Each entry carries a self-contained JSON
+  Schema and a `dispositions` payload (including the `mutability` class). See
+  [Per-connector artifacts packs](#per-connector-artifacts-packs-objecttypes-claims-mutability-atomicity)
+  — a single-type matcher-classified extension does not need it.
 - **No unexpected descriptor keys** — the descriptor validator is strict at every
   level, same as the top-level allowlist.
+
+## Per-connector artifacts packs (objectTypes claims, mutability, atomicity)
+
+> **Single source of truth.** The full architecture — the two categories, the
+> atomicity rule, the mutability classes, and the naming grammar — lives in the
+> `cinatra-ai/docs` pages `references/platform/artifacts.md` (section 7) and
+> `guides/developer/semantic-artifact-extensions.md` (epic cinatra#1448). Do not
+> restate the model here; this is the authoring checklist, and it marks what a
+> manifest may carry **today** versus what is still landing.
+
+**Two categories — pick one.** A **per-connector artifacts pack**
+(`@cinatra-ai/<platform>-artifacts`) claims the typed rows a connector's platform
+owns — one pack per platform, each row type declared as a
+`cinatra.artifact.objectTypes[]` claim. A **connector-independent artifact
+extension** (the matcher-classified single-type shape the rest of this skill
+covers) is for an authored deliverable that belongs to no connector. Coverage is
+always optional — a connector needs no pack; reuse before inventing.
+
+**Plural naming.** A multi-type pack uses the plural `-artifacts` suffix; the name
+validator accepts both `-artifact` and `-artifacts` and the pnpm workspace glob
+includes the plural. **Do not rely on filesystem auto-discovery of a plural-named
+directory yet** — the boot/rescan scanner's plural widening has not landed, so
+treat end-to-end discovery of a plural directory as pending even though the name
+validates.
+
+**Claim each type — self-contained schema.** Each `objectTypes[]` claim **ships
+its own JSON Schema** rather than a required dependency on the connector, so
+installing a pack never force-installs its connector and an unbacked pack is
+valid. Pin the claimant JSON Schema to the registering connector's Zod definition
+with a cross-repo schema-drift test. Exactly one package is the runtime registrar
+for a type — the claim is activation evidence, not a second registrar.
+
+**Mutability disposition — authorable today.** Each claim's `dispositions.mutability`
+names how its rows change (`packages/objects/src/claims.ts`):
+
+- `draftable` — Cinatra-authored, editable while a draft then locked (publishing
+  rides a ledger; no direct draft→published edge);
+- `record` — create-only and immutable;
+- `external` — a connector-owned pointer to third-party content; it **must** set
+  `pinnable:false` (pin the snapshot record, not the live pointer) and its rows
+  are written by connector sync only.
+
+A class may only *narrow* the type's baseline `mutableBy`, never widen it. Type
+ids carry pure entity semantics with **no `-ref` suffix** — delivery form lives in
+`representation.form`. The `external` reference machinery (`linked→stale→dangling`
+plus snapshot-as-new-artifact) is a shipped substrate leaf
+(`packages/objects/src/connector-ref.ts`); the `draftable` publish ledger is **not
+yet shipped**, so you can classify a type but its publish transition is not yet
+driven end-to-end.
+
+**Claim-only mode — do not author it yet.** A multi-type pack is meant to register
+**claim-only**: no generic `<package>:artifact` catch-all type, no package-wide
+matcher/authoring inheritance, each claim surfaced under its exact `objectTypeId`
+(contrast the classic **descriptor-only** and **hybrid** modes, which mint the
+umbrella). The registration substrate exists, but **the manifest `mode` field that
+selects it is not yet in the schema — never add a `mode` key to a manifest** (the
+strict parse rejects it). Until the field lands an authored pack resolves to
+descriptor-only/hybrid.
+
+**Atomicity.** Never compose artifacts: no artifact-ID references inside artifact
+content, and no bundle types. Embed a multi-part deliverable's parts as plain data
+in one aggregate draft, and carry cross-artifact relationships as correlation-key
+string fields (`runId`, `campaignId`) that are **soft provenance only** — no FK,
+cascade, pin, retention, or lifecycle authority; a missing target never changes a
+read/pin/delete/GC outcome. An export is always a new, independent artifact.
+
+**Enrollment.** A pack enrolls into the **dev-lock only**; production-lock
+enrollment is a separate, explicitly approved change, never part of a pack's own
+merge. Per-claim activation follows the staged activation gates and batches into
+projection epochs.
 
 ## The cinatra.artifact.ui renderer block (optional)
 
