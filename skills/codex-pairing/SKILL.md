@@ -1,5 +1,5 @@
 ---
-name: cinatra-codex-pairing
+name: codex-pairing
 user-invocable: false
 description: "Converge a cinatra plan or change with Codex before finalizing. Activates for: 'converge with codex', 'codex round-0 / review', 'pair with codex', running 'codex exec', 'is this MERGE-SAFE', or before finalizing any cinatra plan/diff. Codex inspects the SAME ground truth as the author — the real repo/worktree/files and the exact diff against a pinned base SHA — never a fed summary/subset, and grounds independently to form its own opinion. Codex runs read-only via STDIN only (argv hangs); the verdict is captured to a file (never tail-piped) together with the source it inspected; at most 3 diff rounds; report divergence honestly."
 argument-hint: "[--round-0 | --review]"
@@ -22,7 +22,7 @@ antiTriggers:
   - "openai codex model"
 ---
 
-# cinatra-codex-pairing
+# codex-pairing
 
 ## Objective
 
@@ -42,8 +42,8 @@ question asked.
 
 > Shared reference. The single source of truth for "what
 > counts as proof". Several skills in this pack `@`-include this rather than
-> restating it — including `cinatra-doctor` (what a green check means) and
-> `cinatra-real-surface-verification` (the verify-stack recipe — its single
+> restating it — including `doctor` (what a green check means) and
+> `real-surface-verification` (the verify-stack recipe — its single
 > canonical copy lives here).
 
 ## What counts as proof

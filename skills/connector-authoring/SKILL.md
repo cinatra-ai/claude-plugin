@@ -173,8 +173,8 @@ genuinely required.
 - Import and dependency rules (host-peer value-import bans, optional
   peer-dependency shape, allowed first-party deps) → `extension-boundary`.
 - Kind routing and the overall scaffold-author-verify lifecycle →
-  `extension-authoring`, driven by `/cinatra-extension-new` and
-  `/cinatra-extension-verify`.
+  `extension-authoring`, driven by `/cinatra:extension-new` and
+  `/cinatra:extension-verify`.
 
 ## Steps (operational)
 

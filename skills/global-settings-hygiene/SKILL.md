@@ -1,14 +1,14 @@
 ---
-name: cinatra-global-settings-hygiene
+name: global-settings-hygiene
 user-invocable: false
-description: "The POLICY for machine-global agent configuration in the cinatra org: settings live in the global Claude config (~/.claude/settings.json), NOT per-repo; no per-repo .claude/ in active repos; workspace artifacts (scratch, screenshots, browser-automation output, worktrees) go under the org .claude/ folder. Activates for: 'where do Claude settings live', 'global settings policy', 'settings hygiene policy', 'per-repo .claude', 'centralize claude settings', 'workspace artifacts under org .claude'. Boundary: this owns the agent-config POLICY; cinatra-doctor / setup own the machine-level ENFORCEMENT (verify + apply the exact diffs); repo/org GOVERNANCE levers (org rulesets, admin-bypass, tags, archived repos) belong to your org's repo-governance conventions. Cross-link, no overlap."
+description: "The POLICY for machine-global agent configuration in the cinatra org: settings live in the global Claude config (~/.claude/settings.json), NOT per-repo; no per-repo .claude/ in active repos; workspace artifacts (scratch, screenshots, browser-automation output, worktrees) go under the org .claude/ folder. Activates for: 'where do Claude settings live', 'global settings policy', 'settings hygiene policy', 'per-repo .claude', 'centralize claude settings', 'workspace artifacts under org .claude'. Boundary: this owns the agent-config POLICY; doctor / setup own the machine-level ENFORCEMENT (verify + apply the exact diffs); repo/org GOVERNANCE levers (org rulesets, admin-bypass, tags, archived repos) belong to your org's repo-governance conventions. Cross-link, no overlap."
 when_to_use: "Trigger phrases: \"where do claude settings live\", \"global settings policy\", \"settings hygiene policy\", \"per-repo .claude\", \"centralize claude settings\", \"workspace artifacts under org .claude\"."
 argument-hint: "[settings | artifacts]"
 allowed-tools:
   - Read
 ---
 
-# cinatra-global-settings-hygiene
+# global-settings-hygiene
 
 ## Objective
 
@@ -17,7 +17,7 @@ config (not per-repo); no per-repo .claude/ in active repos; workspace artifacts
 under the org .claude/ folder; org rulesets are the Team-plan lever that auto-covers
 new repos (classic branch protection is the fallback), with admin bypass preserved.
 This skill owns the policy only — verifying or applying the machine baseline is
-cinatra-doctor (read-only) / setup (apply). Cross-link, no overlap.
+doctor (read-only) / setup (apply). Cross-link, no overlap.
 
 ## Purpose
 
@@ -26,10 +26,10 @@ config lives and *which conventions* hold. This skill owns the policy/convention
 it does NOT verify or apply them.
 
 > **Boundary.** THIS skill owns the POLICY. The
-> `cinatra-doctor` / `setup` skills own the machine-level ENFORCEMENT —
-> `cinatra-doctor` reads the global baseline drift (read-only), `setup` applies the
+> `doctor` / `setup` skills own the machine-level ENFORCEMENT —
+> `doctor` reads the global baseline drift (read-only), `setup` applies the
 > exact diffs. Cross-link, no overlap: come HERE for "what the convention is and
-> why", go to `cinatra-doctor` / `setup` for "check / fix my machine against it".
+> why", go to `doctor` / `setup` for "check / fix my machine against it".
 
 ## Settings live in the global config, not per-repo
 
@@ -40,7 +40,7 @@ it does NOT verify or apply them.
 - **No per-repo `.claude/` in active repos.** Active repos do not carry their own
   `.claude/` settings folder; the centralized global config governs. A stray
   per-repo `.claude/` re-introduces the drift centralization exists to remove —
-  remove it and rely on the global config. (`cinatra-doctor` flags a stray one;
+  remove it and rely on the global config. (`doctor` flags a stray one;
   `setup` is where it gets reconciled.)
 
 ## Workspace-artifacts hygiene
@@ -71,5 +71,5 @@ your OWN uniquely-named subdir — shared scratch can hold another task's live w
    is repo/org governance (rulesets, branch protection, admin-bypass) — outside
    this plugin and outside this skill's policy.
 3. To actually VERIFY or APPLY the machine baseline against this policy, hand off to
-   `cinatra-doctor` (read-only check) / `setup` (apply the diffs) — this skill does
+   `doctor` (read-only check) / `setup` (apply the diffs) — this skill does
    not write.

@@ -1,11 +1,11 @@
 ---
-name: cinatra-extension-verify
+name: extension-verify
 description: "Conformance and boundary audit of an existing cinatra extension repo: run the extension-authoring validate stage, audit a connector's cinatra/config.json as a first-class step (never assumed covered by the vendored gate), drive the full extension-boundary sweep and the kind specialist's checklist, then finish with a release-readiness report (version-vs-tag parity, files packlist, dependency edges) while performing NO release act. $ARGUMENTS is an optional path to the extension package root — defaults to the current directory."
 argument-hint: "[path to extension repo — defaults to current directory]"
 disable-model-invocation: true
 ---
 
-# /cinatra-extension-verify
+# /cinatra:extension-verify
 
 Audit the extension repo at the path in `$ARGUMENTS` (default: the current directory) for
 conformance and boundary discipline. This command is a thin orchestrator — the validation

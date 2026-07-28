@@ -86,7 +86,23 @@ natural-language triggers.
 > If skills still don't activate after that, refresh the marketplace/plugin
 > cache: remove and re-add the marketplace (`claude plugin marketplace remove
 > cinatra-foundation` — the OLD marketplace identity — then the `marketplace
-> add` command above) and reload Claude Code.
+> add` command above) and reload Claude Code. Confirm afterwards that no old
+> entry survives in the `/` picker (`claude plugin list` should show exactly
+> one entry for this pack).
+
+> **Naming note — commands and skills carry no `cinatra-` prefix.** The
+> **plugin** is named `cinatra`, so Claude Code already namespaces every entry:
+> a command reads `/cinatra:<command>` and a skill resolves as its bare name.
+> Repeating the prefix in the entry's own name would read `/cinatra:cinatra-…`,
+> so entries are named `doctor`, `extension-new`, `dev-tools`, `grounding` — not
+> `cinatra-doctor`, `cinatra-dev-tools`. If you have an older copy installed,
+> the `/`-picker entries change accordingly (`/cinatra-doctor` →
+> `/cinatra:doctor`, `/cinatra-extension-new` → `/cinatra:extension-new`,
+> `/cinatra-extension-verify` → `/cinatra:extension-verify`); `/setup` and
+> `/onboarding` are unchanged. `scripts/check-plugin-names.mjs` (wired into CI
+> as `plugin-naming-gate`) enforces this mechanically: no prefixed name, the
+> advertised `name:` always equals the file/directory basename, and no name used
+> twice across this plugin's commands and skills.
 
 **Updates use the native plugin update model** (no self-updater). Manually:
 
@@ -161,7 +177,7 @@ the picker** — it still **auto-triggers** on its trigger phrases and is invoca
 by the model via the Skill tool. Keeping skills out of the picker leaves the `/`
 menu to the handful of dedicated commands rather than the whole doctrine surface;
 a genuine user entry point that needs a `/` affordance gets a thin **command**
-wrapper (as `/setup`, `/onboarding`, and `/cinatra-doctor` do), while the skill
+wrapper (as `/setup`, `/onboarding`, and `/cinatra:doctor` do), while the skill
 itself stays hidden.
 
 ### A. Slash commands
@@ -176,9 +192,9 @@ it.**
 |---|---|
 | `/setup` | Bootstrap a fresh contributor machine: install the missing toolchain and configure the global Claude baseline. Dry-run by default; writes only on `--apply`. Thin entry point over the `setup` skill (picker-hidden), so machine bootstrap keeps a dedicated `/` command. |
 | `/onboarding` | Walk a new contributor from "nothing installed" to "working on a first issue": install this pack, run `setup`, get oriented, then find and start a first piece of work. Thin entry point over the `onboarding` skill (picker-hidden). |
-| `/cinatra-doctor` | Read-only check that a contributor machine is correctly set up (toolchain, currency, global Claude baseline); reports fixes, never applies them. Thin entry point over the `cinatra-doctor` skill (picker-hidden). |
-| `/cinatra-extension-new` | Guided scaffold of a new Cinatra extension: collects missing inputs (kind, name, description, scope where allowed; connector access scope, UI surface, migrations), drives `cinatra create-extension` non-interactively, writes the mandatory connector `cinatra/config.json`, validates, then hands payload authoring to the kind specialist skill. |
-| `/cinatra-extension-verify` | Conformance + boundary audit of an existing extension repo: kind gate, packlist dry-run, first-class connector scope-config audit, the `extension-boundary` sweep, the kind specialist checklist, and a report-only release-readiness section. |
+| `/cinatra:doctor` | Read-only check that a contributor machine is correctly set up (toolchain, currency, global Claude baseline); reports fixes, never applies them. Thin entry point over the `doctor` skill (picker-hidden). |
+| `/cinatra:extension-new` | Guided scaffold of a new Cinatra extension: collects missing inputs (kind, name, description, scope where allowed; connector access scope, UI surface, migrations), drives `cinatra create-extension` non-interactively, writes the mandatory connector `cinatra/config.json`, validates, then hands payload authoring to the kind specialist skill. |
+| `/cinatra:extension-verify` | Conformance + boundary audit of an existing extension repo: kind gate, packlist dry-run, first-class connector scope-config audit, the `extension-boundary` sweep, the kind specialist checklist, and a report-only release-readiness section. |
 
 ### B. Skills — auto-triggering, hidden from the `/` picker
 
@@ -187,14 +203,14 @@ slash-command picker. It reaches you two other ways — it **auto-triggers** whe
 the conversation matches its trigger phrases (see the `triggers:` list in each
 skill's frontmatter), and it is invocable by the model via the Skill tool. A
 genuine user entry point that needs a `/` affordance gets a thin **command**
-wrapper in section A (as `setup`, `onboarding`, and `cinatra-doctor` do) — the
+wrapper in section A (as `setup`, `onboarding`, and `doctor` do) — the
 skill itself still stays `user-invocable: false`.
 
 | Skill | Purpose | When to use |
 |---|---|---|
 | `setup` | Bootstrap a fresh contributor machine: install the missing toolchain (VS Code + the Claude Code extension, Codex CLI, gh, node/pnpm, Docker, git, GSD) and configure the global Claude baseline. Dry-run by default; writes only on `--apply`. | First thing on a new machine, or to check/repair your toolchain and global Claude config. |
 | `onboarding` | Walk a new contributor from "nothing installed" to "working on a first issue": install this pack, run `setup`, get oriented, then find and start a first piece of work. | You're new to the Cinatra dev process and want the ordered how-to path. |
-| `cinatra-dev-tools` | Bring up or refresh the local Cinatra dev/verify stack (dedicated db/redis ports, `.env.local` template, per-worktree dev port + queue) and explain the dev extension locks and the LLM-call credential principle. | You need to run or test something against a local Cinatra stack, or need the local LLM-credential rules. |
+| `dev-tools` | Bring up or refresh the local Cinatra dev/verify stack (dedicated db/redis ports, `.env.local` template, per-worktree dev port + queue) and explain the dev extension locks and the LLM-call credential principle. | You need to run or test something against a local Cinatra stack, or need the local LLM-credential rules. |
 | `extension-conventions` | Conventions for authoring, pinning, and integrating a Cinatra extension: one repo per extension, the five kinds (workflow scheduled for removal, cinatra#1030), `cinatra create-extension`, the `package.json#cinatra` manifest shape per kind, the mandatory connector `cinatra/config.json` access declaration, the lock-pin choreography. | You're building or integrating a Cinatra extension and need the cross-kind conventions. |
 | `extension-authoring` | The extension development lifecycle: discover (reuse-before-new), collect scaffold inputs (asking for anything missing), scaffold with the published `cinatra` CLI, route payload authoring to the kind specialist, validate after every change, PR/CI, release-readiness handoff (never releases). | You're creating or developing a Cinatra extension end to end. |
 | `connector-authoring` | Connector specialist: the mandatory `cinatra/config.json` access scope (lowercase tokens, `default` XOR `only`, protected slugs), UI surfaces (`schema-config` vs `bundled-react`), registration-only `register(ctx)` with type-only SDK imports, least-privilege host ports, the migrations decision, current fleet archetypes. | You're authoring or reviewing a Cinatra connector. |
@@ -204,16 +220,16 @@ skill itself still stays `user-invocable: false`.
 | `skill-extension-authoring` | Skill-bundle specialist: `skills/<name>/SKILL.md` payload (one dir per capability), the `cinatra.capabilities` map (host-enforced), `metadata.match_when` agent binding, `-skills` naming and the vendored-scope policy. NOT for Claude Code plugin skills. | You're authoring or reviewing a Cinatra product skill bundle. |
 | `extension-boundary` | The extension ↔ core boundary: every gate-enforced rule (import bans, type-only SDK peers, optional-peer discipline, pinned-empty core coupling baselines, the lock equality invariant, the SDK surface fence, the artifact-renderer channel + opaque-identity core rule) with its enforcing gate and the local reproduction commands. | Your extension change touches anything that crosses (or must not cross) the host boundary, or a boundary gate went red. |
 | `domain-gotchas` | Per-repo domain traps that have cost real rework: design-repo asset/spec conformance, reusable release CI, schema-migration fixture re-apply, Next.js cold-compile staleness, browser-URL vs container-URL, CodeQL false-positive dismissal, the docs-repo convention, real-host CLI testing, and more. | Before touching a repo with a known non-obvious trap, or when something behaves unexpectedly in a way that looks environmental. |
-| `cinatra-codex-pairing` | Converge a plan or diff with Codex before finalizing: read-only sandbox, STDIN-only invocation (argv hangs), capture the verdict to a file, at most 3 diff rounds, report divergence honestly. | Before finalizing any non-trivial plan or diff, or when asked "is this merge-safe". |
-| `cinatra-grounding` | Re-verify a plan or issue's stated assumptions against the LIVE default branch before planning or implementing: fetch origin first (a local clone drifts), cross-check a "missing feature" claim against the already-merged PR list, and correct course only with Codex agreement plus a recorded note. | Before planning or implementing any non-trivial change, or when a "this still calls X" / "feature Y is missing" claim needs checking. |
-| `cinatra-real-surface-verification` | Prove a change works on the REAL surface — a real browser for UI, the real tools for an integration, a real authenticated end-to-end run against seeded fixtures — never a stub; a green stub can mask a real boot crash; check the audit `via:` for an admin-bypass vs a genuine authorization path. | Before claiming any non-trivial fix or feature verified. |
-| `cinatra-gsd-planning-hygiene` | Keep GSD planning artifacts strictly local/untracked/gitignored, keep every planning/provenance token out of the published surface (code, comments, commit messages, branch names, PR titles), and run an adversarially-validated completeness sweep before building a non-trivial change. | Working with a GSD install on this or a companion repo, or before building a non-trivial change. |
-| `cinatra-workspace` | Clone every reachable repo of an org into one parent folder (skip unreachable ones with a notice, always exclude any org-designated archived/off-limits repos), and bootstrap the shared `.claude/` artifacts convention. | Setting up a fresh multi-repo workspace, or asking where the repos live. |
-| `cinatra-global-settings-hygiene` | Policy: machine-global Claude config lives in `~/.claude/settings.json`, never per-repo; workspace artifacts (scratch, worktrees, screenshots) live under the org `.claude/` folder. | Asking where Claude settings should live, or whether a per-repo `.claude/` is OK. |
-| `cinatra-doctor` | Read-only check that a contributor machine is correctly set up: `gh`/Codex/GSD/node/pnpm/Docker/git-hooks toolchain, toolchain currency, and the global Claude baseline. Reports fixes, never applies them. | Checking whether your machine/environment is correctly configured. |
-| `cinatra-plugin-baseline` | Recommend and, on request, install a versioned/pinned Claude plugin baseline with a per-plugin required/recommended tier, rationale, a privacy note, and a runtime probe that each plugin actually loads. | Asking which Claude plugins to install, or wanting to set up a recommended baseline. |
-| `cinatra-source-leak-discipline` | Ship planning-tracked work past a source-leak gate: the two-branch model (a private, never-pushed planning branch + a product branch cut fresh from the remote default), proven gate-clean before opening the PR. | Before opening a PR on a gated repo that carries local planning artifacts. |
-| `cinatra-renovate-handling` | Handle a Renovate/dependency PR: an onboarding/config-only PR may land any time, a routine dependency PR waits for the weekly window, a security update is allowed outside it, and a rolling lock is never hand-bumped. | Reviewing or merging a Renovate/dependency PR. |
+| `codex-pairing` | Converge a plan or diff with Codex before finalizing: read-only sandbox, STDIN-only invocation (argv hangs), capture the verdict to a file, at most 3 diff rounds, report divergence honestly. | Before finalizing any non-trivial plan or diff, or when asked "is this merge-safe". |
+| `grounding` | Re-verify a plan or issue's stated assumptions against the LIVE default branch before planning or implementing: fetch origin first (a local clone drifts), cross-check a "missing feature" claim against the already-merged PR list, and correct course only with Codex agreement plus a recorded note. | Before planning or implementing any non-trivial change, or when a "this still calls X" / "feature Y is missing" claim needs checking. |
+| `real-surface-verification` | Prove a change works on the REAL surface — a real browser for UI, the real tools for an integration, a real authenticated end-to-end run against seeded fixtures — never a stub; a green stub can mask a real boot crash; check the audit `via:` for an admin-bypass vs a genuine authorization path. | Before claiming any non-trivial fix or feature verified. |
+| `gsd-planning-hygiene` | Keep GSD planning artifacts strictly local/untracked/gitignored, keep every planning/provenance token out of the published surface (code, comments, commit messages, branch names, PR titles), and run an adversarially-validated completeness sweep before building a non-trivial change. | Working with a GSD install on this or a companion repo, or before building a non-trivial change. |
+| `workspace` | Clone every reachable repo of an org into one parent folder (skip unreachable ones with a notice, always exclude any org-designated archived/off-limits repos), and bootstrap the shared `.claude/` artifacts convention. | Setting up a fresh multi-repo workspace, or asking where the repos live. |
+| `global-settings-hygiene` | Policy: machine-global Claude config lives in `~/.claude/settings.json`, never per-repo; workspace artifacts (scratch, worktrees, screenshots) live under the org `.claude/` folder. | Asking where Claude settings should live, or whether a per-repo `.claude/` is OK. |
+| `doctor` | Read-only check that a contributor machine is correctly set up: `gh`/Codex/GSD/node/pnpm/Docker/git-hooks toolchain, toolchain currency, and the global Claude baseline. Reports fixes, never applies them. | Checking whether your machine/environment is correctly configured. |
+| `plugin-baseline` | Recommend and, on request, install a versioned/pinned Claude plugin baseline with a per-plugin required/recommended tier, rationale, a privacy note, and a runtime probe that each plugin actually loads. | Asking which Claude plugins to install, or wanting to set up a recommended baseline. |
+| `source-leak-discipline` | Ship planning-tracked work past a source-leak gate: the two-branch model (a private, never-pushed planning branch + a product branch cut fresh from the remote default), proven gate-clean before opening the PR. | Before opening a PR on a gated repo that carries local planning artifacts. |
+| `renovate-handling` | Handle a Renovate/dependency PR: an onboarding/config-only PR may land any time, a routine dependency PR waits for the weekly window, a security update is allowed outside it, and a rolling lock is never hand-bumped. | Reviewing or merging a Renovate/dependency PR. |
 
 See each skill file under [`skills/`](./skills/) (`skills/<name>/SKILL.md`) for
 the full trigger list and workflow body.
@@ -398,7 +414,7 @@ Then re-run the installer.
 
 A stray published-marker artifact in the tree can break a pinned sync. Clean
 strays before trusting a refresh. See the
-[`cinatra-dev-tools` skill](./skills/cinatra-dev-tools/SKILL.md) for the full
+[`dev-tools` skill](./skills/dev-tools/SKILL.md) for the full
 recipe.
 
 ---

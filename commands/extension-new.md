@@ -1,11 +1,11 @@
 ---
-name: cinatra-extension-new
+name: extension-new
 description: "Guided scaffold of a new cinatra extension: parse the intent, refuse the scheduled-for-removal workflow kind by default, drive the extension-authoring skill to collect inputs (asking the user for anything missing) and run the cinatra create-extension CLI non-interactively, reconcile a connector scaffold with the mandatory cinatra/config.json access declaration, run the validation pair, then hand payload authoring to the kind's specialist skill — release-readiness only: no repo creation, no tag, no publish. $ARGUMENTS is the rough intent: optionally a kind (agent | connector | artifact | skill), a name, and a freeform description of what the extension should do."
 argument-hint: "[kind] [name] [freeform intent — what the extension should do]"
 disable-model-invocation: true
 ---
 
-# /cinatra-extension-new
+# /cinatra:extension-new
 
 Scaffold a new cinatra extension from the intent in `$ARGUMENTS`. This command is a thin
 orchestrator — input collection and the scaffold procedure live in the `extension-authoring`

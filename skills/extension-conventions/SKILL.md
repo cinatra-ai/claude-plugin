@@ -174,8 +174,8 @@ the app, and the live SDK packages register them.
 
 ## Routing (the extension-dev pack)
 
-- Commands: `/cinatra-extension-new` scaffolds a new extension;
-  `/cinatra-extension-verify` validates an existing one.
+- Commands: `/cinatra:extension-new` scaffolds a new extension;
+  `/cinatra:extension-verify` validates an existing one.
 - `extension-authoring` owns the core authoring lifecycle; the kind specialists are
   `connector-authoring`, `agent-authoring`, `artifact-authoring`, and
   `skill-extension-authoring`; the extension ↔ core boundary doctrine lives in
