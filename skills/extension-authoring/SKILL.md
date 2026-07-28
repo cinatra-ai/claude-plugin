@@ -39,7 +39,7 @@ publish trigger, and the release act needs explicit owner/maintainer approval.
 
 # Workflow: extension-authoring
 
-> The lifecycle spine. The `/cinatra-extension-new` and `/cinatra-extension-verify`
+> The lifecycle spine. The `/cinatra:extension-new` and `/cinatra:extension-verify`
 > commands drive this skill; per-kind payload doctrine lives in the specialists.
 
 ## Purpose
@@ -189,7 +189,7 @@ explicit user override, re-check the epic state first and record the override.
   host ports, SDK peer rules).
 - `agent-authoring`, `connector-authoring`, `artifact-authoring`,
   `skill-extension-authoring` — per-kind payload doctrine.
-- `/cinatra-extension-new` and `/cinatra-extension-verify` — thin entry points;
+- `/cinatra:extension-new` and `/cinatra:extension-verify` — thin entry points;
   they orchestrate, this skill owns the procedure.
 
 ## Steps (operational)

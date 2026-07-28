@@ -1,7 +1,7 @@
 ---
-name: cinatra-real-surface-verification
+name: real-surface-verification
 user-invocable: false
-description: "Prove a cinatra change works on the REAL surface — a real browser (Playwright) for UI, the real MCP tools for integrations, a real authenticated end-to-end run against seeded fixtures — never a stub or a hand-waved 'should work'. Activates for: 'verify on the real surface', 'real surface verification', 'playwright real surface', 'real mcp verification', 'seeded e2e verification', 'prove the change on the running app', 'check the audit via'. A green stub can mask a real boot crash (3 deterministic failures = a real bug, not a flake); a content-write proof authorized by an admin bypass is NOT production parity — check the audit `via:`. References (does not restate) the shared verify-stack recipe; bringing the stack UP is cinatra-dev-tools's job."
+description: "Prove a cinatra change works on the REAL surface — a real browser (Playwright) for UI, the real MCP tools for integrations, a real authenticated end-to-end run against seeded fixtures — never a stub or a hand-waved 'should work'. Activates for: 'verify on the real surface', 'real surface verification', 'playwright real surface', 'real mcp verification', 'seeded e2e verification', 'prove the change on the running app', 'check the audit via'. A green stub can mask a real boot crash (3 deterministic failures = a real bug, not a flake); a content-write proof authorized by an admin bypass is NOT production parity — check the audit `via:`. References (does not restate) the shared verify-stack recipe; bringing the stack UP is dev-tools's job."
 when_to_use: "Trigger phrases: \"verify on the real surface\", \"real surface verification\", \"playwright real surface\", \"real mcp verification\", \"seeded e2e verification\", \"prove the change on the running app\", \"check the audit via\", \"stub masks a boot crash\"."
 argument-hint: "[ui | tools | e2e]"
 allowed-tools:
@@ -9,7 +9,7 @@ allowed-tools:
   - Bash
 ---
 
-# cinatra-real-surface-verification
+# real-surface-verification
 
 ## Objective
 
@@ -18,7 +18,7 @@ MCP tools for integrations, a real authenticated end-to-end run against seeded
 fixtures. A green stub can mask a real boot crash (3 deterministic failures = a real
 bug); a write authorized by an admin bypass is not production parity — check the
 audit `via:`. Reference the shared verify-stack recipe rather than restating it;
-bringing the stack UP belongs to cinatra-dev-tools. Refuse to certify an
+bringing the stack UP belongs to dev-tools. Refuse to certify an
 undrivable surface rather than silently waiving it.
 
 > The following block is the canonical shared reference `ref-evidence-recipe.md`, inlined here so this skill is self-contained (the cinatra evidence/state-vocabulary doctrine is load-bearing and must always be present when the skill loads).
@@ -27,8 +27,8 @@ undrivable surface rather than silently waiving it.
 
 > Shared reference. The single source of truth for "what
 > counts as proof". Several skills in this pack `@`-include this rather than
-> restating it — including `cinatra-doctor` (what a green check means) and
-> `cinatra-real-surface-verification` (the verify-stack recipe — its single
+> restating it — including `doctor` (what a green check means) and
+> `real-surface-verification` (the verify-stack recipe — its single
 > canonical copy lives here).
 
 ## What counts as proof
@@ -64,7 +64,7 @@ shared evidence/verification recipe above (the single source of truth for "what
 counts as proof") and the single canonical verify-stack recipe it carries, rather
 than restating either.
 
-**Boundary vs `cinatra-dev-tools`.** `cinatra-dev-tools` BRINGS UP / refreshes
+**Boundary vs `dev-tools`.** `dev-tools` BRINGS UP / refreshes
 the local dev + verify stack (the environment). THIS skill is about RUNNING the
 change on that surface and confirming the behaviour is real. The verify-stack
 recipe (dedicated db/redis ports + an `.env.local` template + a per-worktree dev
@@ -177,7 +177,7 @@ wrapper, and re-check the actor.
 
 ## How to verify (operational)
 
-1. Bring the surface up via `cinatra-dev-tools` (or confirm it is already up on a
+1. Bring the surface up via `dev-tools` (or confirm it is already up on a
    worktree-local port + queue name so parallel worktrees never collide).
 2. Drive the REAL surface for the change class (browser / tools / auth e2e) against
    seeded fixtures.

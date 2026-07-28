@@ -104,7 +104,7 @@ The setup flow can also land the **shadcn skill** (both Claude and Codex —
 cinatra's UI is shadcn/ui-based) as an optional install during a fresh setup.
 Like every optional tool, this goes through the pack's SHARED
 detect -> consent -> apply engine (`bin/lib/ensure.cjs`, claude-plugin#16) —
-the same engine `cinatra-dev-tools` uses — so it is reported by `doctor` as a
+the same engine `dev-tools` uses — so it is reported by `doctor` as a
 normal read-only check (warn, not fail: the pack runs fine without it) and
 only installed on explicit confirm, never bundled silently into a plain
 `--apply` run:
@@ -119,7 +119,7 @@ node "$CLAUDE_PLUGIN_ROOT/bin/dev-tools.cjs" ensure --tool shadcn-skill --apply 
 Whenever a required tool or skill is missing or misconfigured, ASK before
 installing/configuring it — this skill's own dry-run + confirm model is the
 template the rest of the pack follows, never the other way around.
-`cinatra-dev-tools` and `setup` both route every ask-before-install case
+`dev-tools` and `setup` both route every ask-before-install case
 through the same shared engine (`dev-tools.cjs ensure --tool <id>`): a
 read-only check that reports the tool's status and, if needed, the EXACT fix
 command, and an explicit `--apply` that runs the fix only after the user says

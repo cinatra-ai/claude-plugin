@@ -1,5 +1,5 @@
 ---
-name: cinatra-source-leak-discipline
+name: source-leak-discipline
 user-invocable: false
 description: "Ship cinatra planning-tracked work past the org source-leak gate without tripping it. Activates for: 'run the source-leak gate locally', 'make this PR branch gate-clean', 'the GSD planning-branch helper is not gate-clean', 'filter .planning out of a PR', 'the two-branch model', or before opening a PR on a gated cinatra repo. The planning-branch helper preserves the structural planning documents so it is NOT gate-clean — use a private planning branch (never pushed) plus a product branch cut fresh from the remote default with the product diff only, and prove it clean (no planning paths in the diff, run the repo gate locally) before opening the PR. Carry any post-merge-gate squash-marker in the squash body."
 when_to_use: "Trigger phrases: \"source-leak gate\", \"source leak gate\", \"leak gate\", \"two-branch model\", \"gate-clean pr\", \"pr branch clean\", \"pr branch is clean\", \"filter .planning\", \"filter planning from a pr\", \"gsd-pr-branch\", \"squash marker\", \"squash body marker\", \"squash-marker trap\", \"skills-drift marker\", \"post-merge gate marker\"."
@@ -9,7 +9,7 @@ allowed-tools:
   - Bash
 ---
 
-# cinatra-source-leak-discipline
+# source-leak-discipline
 
 ## Objective
 
@@ -30,8 +30,8 @@ head.
 
 > Shared reference. The single source of truth for "what
 > counts as proof". Several skills in this pack `@`-include this rather than
-> restating it — including `cinatra-doctor` (what a green check means) and
-> `cinatra-real-surface-verification` (the verify-stack recipe — its single
+> restating it — including `doctor` (what a green check means) and
+> `real-surface-verification` (the verify-stack recipe — its single
 > canonical copy lives here).
 
 ## What counts as proof
@@ -64,7 +64,7 @@ there is exactly one definition.
 The OPERATIONAL discipline for shipping planning-tracked work past the org
 **source-leak gate** without tripping it: run the gate locally first, and use the
 **two-branch model** because the GSD planning-branch filter is NOT gate-clean on
-its own. The sibling skill `cinatra-gsd-planning-hygiene` owns the POLICY (what the
+its own. The sibling skill `gsd-planning-hygiene` owns the POLICY (what the
 banned tokens are and why planning stays local); this skill owns the MECHANICS.
 
 ## The source-leak gate (what it is)

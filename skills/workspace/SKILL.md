@@ -1,5 +1,5 @@
 ---
-name: cinatra-workspace
+name: workspace
 user-invocable: false
 description: "Set up the cinatra repo workspace: clone every reachable cinatra-ai repo into ONE parent folder so the agent always opens in the parent. Enumerates org repos via gh, clones ONLY the repos this account can reach (skip-with-notice per unreachable one), ALWAYS excludes the off-limits archived repos (the named set enforced in repo-clone.cjs), and bootstraps the org .claude/ artifacts convention. Activates for: 'clone all the cinatra repos', 'set up the cinatra workspace', 'clone the org', 'where do the cinatra repos live', 'which parent folder for repos', 'a new cinatra repo to clone'. New reachable repos auto-clone per the repo-currency knob; renames/archivals are surfaced and never auto-deleted."
 when_to_use: "Trigger phrases: \"clone all the cinatra repos\", \"clone all repos\", \"set up the cinatra workspace\", \"cinatra workspace\", \"clone the org\", \"where do the cinatra repos live\", \"which parent folder for repos\", \"new cinatra repo to clone\"."
@@ -9,7 +9,7 @@ allowed-tools:
   - Bash
 ---
 
-# cinatra-workspace
+# workspace
 
 ## Objective
 
@@ -92,6 +92,6 @@ can hold other live worktrees).
 
 The clone mechanics live here; the workspace HYGIENE policy (artifacts under the
 org `.claude/`, absolute paths for ad-hoc artifacts, the org-root allowlist,
-settings centralized) is owned by the cinatra-global-settings-hygiene convention skill —
+settings centralized) is owned by the global-settings-hygiene convention skill —
 this skill bootstraps the policy and mirrors it verbatim above, it does not
 redefine it.

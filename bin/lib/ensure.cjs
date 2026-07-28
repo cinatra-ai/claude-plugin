@@ -6,7 +6,7 @@
 // install/config action. It does NOT reimplement any installer: it interprets
 // an EXISTING doctor probe's ok/warn/fail verdict, and on request runs the
 // EXISTING fix (e.g. `shadcn-install.cjs`) for that one named tool. A skill
-// (`cinatra-dev-tools`, `setup`, ...) shells out to this so the LLM never
+// (`dev-tools`, `setup`, ...) shells out to this so the LLM never
 // free-decides what "needs asking" means — parity with the "skills shell out
 // to dev-tools" pattern doctor.cjs and plugin-updates.cjs already follow.
 //
@@ -29,7 +29,7 @@
 //
 // The TOOLS registry is the "shared" part: adding a new ensurable tool means
 // adding one entry (probe + fixCommand + apply), not a bespoke ask-then-fix
-// flow per tool. `setup` and `cinatra-dev-tools` both call the SAME entrypoint
+// flow per tool. `setup` and `dev-tools` both call the SAME entrypoint
 // so consent behaviour never drifts between skills.
 // ---------------------------------------------------------------------------
 

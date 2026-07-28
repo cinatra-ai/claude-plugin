@@ -1,5 +1,5 @@
 ---
-name: cinatra-grounding
+name: grounding
 user-invocable: false
 description: "Re-verify a cinatra issue's stated assumptions against the LIVE code before planning or implementing. Activates for: 'ground this issue', 'is this still true', 'check the live code', 'verify the assumptions before planning', 'this checkout might be stale', or any issue-body claim about code state ('X still calls Y', 'feature Z is missing'). Always fetch origin and read the default branch (local clones drift behind) and cross-check a 'missing feature' claim against already-merged PRs; deviate from the issue only with Codex agreement and a note on the issue."
 when_to_use: "Trigger phrases: \"ground this issue\", \"is this still true\", \"check the live code\", \"verify the assumptions before planning\", \"this checkout might be stale\", \"stale checkout\", \"ground the assumptions\", \"is the issue premise still valid\"."
@@ -9,7 +9,7 @@ allowed-tools:
   - Bash
 ---
 
-# cinatra-grounding
+# grounding
 
 ## Objective
 
@@ -26,8 +26,8 @@ confident-but-stale fact poisons every downstream decision.
 
 > Shared reference. The single source of truth for "what
 > counts as proof". Several skills in this pack `@`-include this rather than
-> restating it — including `cinatra-doctor` (what a green check means) and
-> `cinatra-real-surface-verification` (the verify-stack recipe — its single
+> restating it — including `doctor` (what a green check means) and
+> `real-surface-verification` (the verify-stack recipe — its single
 > canonical copy lives here).
 
 ## What counts as proof

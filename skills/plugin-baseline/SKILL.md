@@ -1,5 +1,5 @@
 ---
-name: cinatra-plugin-baseline
+name: plugin-baseline
 user-invocable: false
 description: "Recommend and install the cinatra org's Claude plugin baseline — the versioned, pinned set of plugins (superpowers, frontend-design, claude-mem, ui-ux-pro-max) with a per-plugin required/recommended tier, rationale, privacy/hooks/MCP note, and disable/uninstall command. Activates for: 'which Claude plugins should I install for cinatra', 'the recommended cinatra plugins', 'set up the plugin baseline', 'the cinatra plugin manifest', 'install superpowers / claude-mem'. Installs each with --scope user and runtime-PROBES that a plugin actually loads before relying on it; the pinned SHAs are design-seed references, treated as unverified until probed."
 when_to_use: "Trigger phrases: \"which claude plugins should i install for cinatra\", \"recommended cinatra plugins\", \"the recommended cinatra plugins\", \"set up the plugin baseline\", \"plugin baseline\", \"cinatra plugin manifest\", \"install superpowers\", \"install claude-mem\"."
@@ -9,7 +9,7 @@ allowed-tools:
   - Bash
 ---
 
-# cinatra-plugin-baseline
+# plugin-baseline
 
 ## Objective
 
@@ -72,6 +72,6 @@ uninstall <name> --scope user`).
 
 ## Currency
 
-Pins are refreshed on the maintenance cadence; the cinatra-doctor/setup flow can surface
+Pins are refreshed on the maintenance cadence; the doctor/setup flow can surface
 when a recommended plugin is absent. Bump `lastVerified` + the per-plugin
 `version`/`sha` when the manifest is reviewed.

@@ -1,5 +1,5 @@
 ---
-name: cinatra-doctor
+name: doctor
 user-invocable: false
 description: "Check that a cinatra contributor machine is correctly set up: verify the toolchain (gh authed + repo/project scopes, Codex CLI present, a GSD install, node/pnpm version floors, Docker daemon, git identity + core.hooksPath + commit-msg hook), toolchain currency (installed vs latest), and the global Claude baseline (settings.json attribution keys, the org CLAUDE.md block, the Playwright output-dir pin, no per-repo .claude). Activates for: 'run doctor', 'check my cinatra setup', 'is my environment ready', 'verify the toolchain', 'what's missing for cinatra', 'am I configured'. READ-ONLY: it reports accurate state + actionable fixes and never writes — fixing is setup's job."
 when_to_use: "Trigger phrases: \"doctor\", \"run doctor\", \"check my cinatra setup\", \"check my setup\", \"is my environment ready\", \"verify the toolchain\", \"verify toolchain\", \"what's missing for cinatra\", \"am i configured\"."
@@ -9,7 +9,7 @@ allowed-tools:
   - Bash
 ---
 
-# cinatra-doctor
+# doctor
 
 ## Objective
 
@@ -32,7 +32,7 @@ for every gap. READ-ONLY: this skill never writes; applying fixes is setup.
    global Claude baseline. Every probe is read-only and time-bounded.
 2. Relay each FAIL/WARN with its `fix` string verbatim; do not invent fixes.
 3. For toolchain CURRENCY and the global baseline, hand off to `setup`
-   (apply) or `cinatra-workspace` (repos) — doctor only diagnoses.
+   (apply) or `workspace` (repos) — doctor only diagnoses.
 4. Exit non-zero only on a FAIL; warnings are advisory.
 </process>
 
@@ -42,8 +42,8 @@ for every gap. READ-ONLY: this skill never writes; applying fixes is setup.
 
 > Shared reference. The single source of truth for "what
 > counts as proof". Several skills in this pack `@`-include this rather than
-> restating it — including `cinatra-doctor` (what a green check means) and
-> `cinatra-real-surface-verification` (the verify-stack recipe — its single
+> restating it — including `doctor` (what a green check means) and
+> `real-surface-verification` (the verify-stack recipe — its single
 > canonical copy lives here).
 
 ## What counts as proof
@@ -83,7 +83,7 @@ eyeball a tool version. It reports, for each item, `ok | warn | fail` + a fix.
   `gh auth refresh` command; not-authenticated is a FAIL.
 - **Codex CLI** — PRESENT only. The probe never runs `codex exec` — the argv form
   hangs, so convergence is always STDIN-only (`codex exec --skip-git-repo-check <
-  file`). That rule lives in the cinatra-codex-pairing doctrine, not in this probe.
+  file`). That rule lives in the codex-pairing doctrine, not in this probe.
 - **a GSD install** — reported as co-resident (the pack runs alongside a GSD
   install without clobbering it). Absence is informational, never a failure.
 - **node / pnpm** — present and above the version floors.
@@ -114,7 +114,7 @@ From `dev-tools.cjs global-settings-diff` (also read-only):
 - The global `CLAUDE.md` org baseline block (a managed block).
 - The Playwright MCP `--output-dir` pinned under the org `.claude/` (hygiene).
 - No per-repo `.claude/` in active repos (advisory; the convention lives in the
-  cinatra-global-settings-hygiene skill).
+  global-settings-hygiene skill).
 
 ## How to run it
 
@@ -129,6 +129,6 @@ node "$HOME/.claude/dev-core/bin/dev-tools.cjs" global-settings-diff
 ## Boundary
 
 Doctor only DIAGNOSES. To FIX the toolchain or apply the global baseline, hand
-off to `setup`; to clone missing org repos, hand off to `cinatra-workspace`. The
-global-settings POLICY/conventions live in the cinatra-global-settings-hygiene skill;
+off to `setup`; to clone missing org repos, hand off to `workspace`. The
+global-settings POLICY/conventions live in the global-settings-hygiene skill;
 this skill owns the machine-level verify/ENFORCE half.
