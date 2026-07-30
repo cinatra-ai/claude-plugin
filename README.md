@@ -28,6 +28,10 @@ or with Cinatra. The skills cover:
   planning hygiene, source-leak-gate discipline, machine/settings hygiene,
   multi-repo workspace setup, a recommended Claude plugin baseline, and
   Renovate/dependency-PR handling.
+- **Epic planning and issue creation** — a slash command that plans an epic
+  against a real codebase and a real project board, presents it for approval and
+  creates nothing until it gets one, plus the reusable issue-creation skill it
+  drives (dedup, grounding, convergence, leak gate, create, board, link).
 
 This is a **public** package, shipped as a native **Claude Code plugin**. The
 recommended way to install is `claude plugin marketplace add` + `claude plugin
@@ -195,6 +199,7 @@ it.**
 | `/cinatra:doctor` | Read-only check that a contributor machine is correctly set up (toolchain, currency, global Claude baseline); reports fixes, never applies them. Thin entry point over the `doctor` skill (picker-hidden). |
 | `/cinatra:extension-new` | Guided scaffold of a new Cinatra extension: collects missing inputs (kind, name, description, scope where allowed; connector access scope, UI surface, migrations), drives `cinatra create-extension` non-interactively, writes the mandatory connector `cinatra/config.json`, validates, then hands payload authoring to the kind specialist skill. |
 | `/cinatra:extension-verify` | Conformance + boundary audit of an existing extension repo: kind gate, packlist dry-run, first-class connector scope-config audit, the `extension-boundary` sweep, the kind specialist checklist, and a report-only release-readiness section. |
+| `/cinatra:epic-plan` | Plan an epic (with sub-issues) for a given project **and** repository: research the live default branch, read the project's items in full including closed ones, synthesise a breakdown with dependency edges, converge it with Codex running inside the target checkout, refuse to present a plan that fails the structural gate, present it and stop — then, only on approval, create and link the epic + sub-issues through `issue-authoring`. |
 
 ### B. Skills — auto-triggering, hidden from the `/` picker
 
@@ -221,6 +226,7 @@ skill itself still stays `user-invocable: false`.
 | `extension-boundary` | The extension ↔ core boundary: every gate-enforced rule (import bans, type-only SDK peers, optional-peer discipline, pinned-empty core coupling baselines, the lock equality invariant, the SDK surface fence, the artifact-renderer channel + opaque-identity core rule) with its enforcing gate and the local reproduction commands. | Your extension change touches anything that crosses (or must not cross) the host boundary, or a boundary gate went red. |
 | `domain-gotchas` | Per-repo domain traps that have cost real rework: design-repo asset/spec conformance, reusable release CI, schema-migration fixture re-apply, Next.js cold-compile staleness, browser-URL vs container-URL, CodeQL false-positive dismissal, the docs-repo convention, real-host CLI testing, and more. | Before touching a repo with a known non-obvious trap, or when something behaves unexpectedly in a way that looks environmental. |
 | `codex-pairing` | Converge a plan or diff with Codex before finalizing: read-only sandbox, STDIN-only invocation (argv hangs), capture the verdict to a file, at most 3 diff rounds, report divergence honestly. | Before finalizing any non-trivial plan or diff, or when asked "is this merge-safe". |
+| `issue-authoring` | Create a GitHub issue — or an epic with its sub-issues — through one idempotent procedure: dedup against the repo and the project (open and closed) first, ground the premise, converge the issue text with Codex, run the leak gate fail-closed to public, then create, board, link (native nesting + blocked-by edges) and verify each mutation from the API. | Filing anything as an issue, or creating the epic + sub-issues an approved plan describes. |
 | `grounding` | Re-verify a plan or issue's stated assumptions against the LIVE default branch before planning or implementing: fetch origin first (a local clone drifts), cross-check a "missing feature" claim against the already-merged PR list, and correct course only with Codex agreement plus a recorded note. | Before planning or implementing any non-trivial change, or when a "this still calls X" / "feature Y is missing" claim needs checking. |
 | `real-surface-verification` | Prove a change works on the REAL surface — a real browser for UI, the real tools for an integration, a real authenticated end-to-end run against seeded fixtures — never a stub; a green stub can mask a real boot crash; check the audit `via:` for an admin-bypass vs a genuine authorization path. | Before claiming any non-trivial fix or feature verified. |
 | `gsd-planning-hygiene` | Keep GSD planning artifacts strictly local/untracked/gitignored, keep every planning/provenance token out of the published surface (code, comments, commit messages, branch names, PR titles), and run an adversarially-validated completeness sweep before building a non-trivial change. | Working with a GSD install on this or a companion repo, or before building a non-trivial change. |

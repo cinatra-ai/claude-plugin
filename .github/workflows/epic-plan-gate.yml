@@ -1,0 +1,36 @@
+name: epic-plan-gate
+
+# Blocking gate for the plan contract behind /cinatra:epic-plan. The command
+# promises a plan whose structure is MECHANICALLY checkable — plain-language
+# section intros, four-part owner questions, an always-present conflicts
+# section, a project read proven to have reached the end of the board, a Codex
+# round proven to have run read-only inside the target checkout, and an approval
+# bound to the exact plan revision it approved. scripts/check-epic-plan.mjs is
+# what enforces that (the command shells out to it and refuses on a non-zero
+# exit), so this gate proves the enforcement itself still works: the --selftest
+# proves every rule can actually FAIL, and the fixture suite proves the rules
+# hold end to end through the CLI the command calls, including the codex-bridge
+# provenance the verdict check depends on.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  epic-plan-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pack
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+      - name: Self-test the plan rules (prove the gate can fail)
+        run: node scripts/check-epic-plan.mjs --selftest
+      - name: Fixture suite — plan contract + codex-bridge provenance
+        run: node --test tests/epic-plan.test.mjs tests/codex-bridge.test.mjs
