@@ -134,6 +134,16 @@ convergence**, however green it reads.
   artifact: round-0 **plan** → the actual plan document; **diff / MERGE-SAFE** → the
   exact diff against the pinned base SHA plus worktree access; **issue-body** → the
   full proposed title + body (see below).
+- **Run IN the tree, and record which tree.** Pass the checkout under review as
+  the round's **working directory** (`runCodex({ …, cwd })`) so Codex greps the
+  real source instead of judging the prompt. The bridge resolves it to an
+  absolute path, threads it to the subprocess, and writes it into the capture
+  header beside the pinned sandbox — so the verdict is attributable to a specific
+  TREE, not only a specific model. A `cwd` that does not exist is a hard failure,
+  never a silent fallback to the caller's directory: a confident verdict about
+  the wrong tree is worse than no verdict. When the question is "does this plan
+  match the code", ask for the evidence Codex found ITSELF (repo-relative paths
+  and symbols) so the verdict can be told apart from a paraphrase of the prompt.
 - **Capture the source Codex saw.** Record, alongside the captured verdict, the
   pinned base SHA / worktree path / artifact the round actually inspected, so a
   reviewer can confirm Codex judged the same ground truth as the primary. A verdict
@@ -159,11 +169,11 @@ node "$HOME/.claude/dev-core/bin/lib/codex-bridge.cjs"   # buildCodexArgs / runC
 `gpt-5.6-sol`) at `max`, the maximum reasoning tier, in a read-only sandbox —
 under `--strict-config`, never falling back to the CLI default (which is a
 *writable* sandbox). A caller's `extraArgs` cannot escalate the sandbox or
-override the pins — a last-write-wins override is rejected. `runCodex({ prompt, outputFile })` feeds the
+override the pins — a last-write-wins override is rejected. `runCodex({ prompt, outputFile, cwd })` feeds the
 prompt on STDIN, writes the combined output to `outputFile` (capture-not-tail)
-with a header recording the pinned model + effort, and returns
-`{ ok, code, model, reasoningEffort, … }` so the captured verdict is attributable
-to a specific model and effort. A pinned model or effort the installed CLI
+with a header recording the pinned model + effort + sandbox + working directory,
+and returns `{ ok, code, model, reasoningEffort, sandbox, cwd, … }` so the
+captured verdict is attributable to a specific model, effort and TREE. A pinned model or effort the installed CLI
 rejects — an invalid effort value, or an unrecognized config key (`--strict-config`
 turns a silently-ignored key into a hard error) — surfaces as `ok:false` (a
 visible failure), never a silent downgrade.

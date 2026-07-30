@@ -27,6 +27,12 @@
 //   4. runCodex records the resolved model + effort alongside the captured
 //      verdict: returned on the result object AND written as a header into the
 //      capture file, so a verdict is auditable to a specific model + effort.
+//   5. runCodex runs the round in the requested working directory — the tree
+//      under review — and records that directory plus the pinned sandbox in the
+//      capture header, so a verdict is auditable to a specific TREE as well as a
+//      specific model. A cwd that does not exist (or is not a directory) is a
+//      hard failure: silently falling back to the caller's directory would
+//      produce a confident verdict about the wrong source.
 //
 // The runCodex subprocess tests use a FAKE codex executable (a tiny shell
 // script) passed via `bin`, so the bridge is exercised end-to-end without a
@@ -281,4 +287,69 @@ test("runCodex requires a non-empty prompt and an outputFile", () => {
   assert.throws(() => runCodex({ outputFile: "/tmp/x" }), /non-empty prompt/);
   assert.throws(() => runCodex({ prompt: "" , outputFile: "/tmp/x" }), /non-empty prompt/);
   assert.throws(() => runCodex({ prompt: "hi" }), /outputFile is required/);
+});
+
+// --- 5: code-access provenance (the working directory the round ran in) ------
+//
+// A convergence round that must ground itself in a repository has to RUN in
+// that repository, and the capture has to say so — a verdict that does not
+// record where it ran cannot be shown to have inspected the same tree as the
+// author. So runCodex takes a cwd, threads it to the subprocess, records it
+// (with the pinned sandbox) in the capture header, and returns it.
+
+// A fake codex that reports its own working directory — proves the cwd reached
+// the subprocess rather than merely being written into the header.
+function fakeCodexPwd(dir) {
+  const p = path.join(dir, "codex-pwd.sh");
+  fs.writeFileSync(p, "#!/bin/sh\nprintf 'RAN-IN: %s\\n' \"$(pwd)\"\nexit 0\n", { mode: 0o755 });
+  return p;
+}
+
+test("runCodex runs the round in the requested working directory (the tree under review)", () => {
+  const dir = scratch();
+  const repo = fs.mkdtempSync(path.join(dir, "target-repo-"));
+  const bin = fakeCodexPwd(dir);
+  const outputFile = path.join(dir, "verdict-cwd.txt");
+  const r = runCodex({ prompt: "converge", outputFile, bin, cwd: repo });
+  assert.equal(r.ok, true);
+  assert.equal(r.cwd, path.resolve(repo), "the returned cwd is the resolved absolute path");
+  const captured = fs.readFileSync(outputFile, "utf8");
+  // The subprocess really ran there (macOS resolves /var -> /private/var, so
+  // compare the basename the shell reports).
+  assert.match(captured, new RegExp(`RAN-IN: .*${path.basename(repo)}`));
+});
+
+test("runCodex records the sandbox and the working directory in the capture header (code-access provenance)", () => {
+  const dir = scratch();
+  const repo = fs.mkdtempSync(path.join(dir, "target-repo-"));
+  const bin = fakeCodex(dir, "assert-pins");
+  const outputFile = path.join(dir, "verdict-provenance.txt");
+  const r = runCodex({ prompt: "converge", outputFile, bin, cwd: repo });
+  const captured = fs.readFileSync(outputFile, "utf8");
+  assert.match(captured, new RegExp(`sandbox=${PINNED_SANDBOX}`), "the header records the pinned sandbox");
+  assert.match(captured, new RegExp(`cwd=${path.resolve(repo)}(\\s|$)`, "m"), "the header records the absolute working directory");
+  assert.equal(r.sandbox, PINNED_SANDBOX);
+  assert.equal(r.cwd, path.resolve(repo));
+});
+
+test("runCodex HARD-fails on a working directory that does not exist (never a silent fallback to the caller's tree)", () => {
+  const dir = scratch();
+  const bin = fakeCodex(dir, "assert-pins");
+  assert.throws(
+    () => runCodex({ prompt: "converge", outputFile: path.join(dir, "verdict-missing-cwd.txt"), bin, cwd: path.join(dir, "no-such-checkout") }),
+    /cannot be read/,
+  );
+  assert.throws(
+    () => runCodex({ prompt: "converge", outputFile: path.join(dir, "verdict-file-cwd.txt"), bin, cwd: bin }),
+    /is not a directory/,
+  );
+});
+
+test("runCodex defaults the working directory to the caller's, still recorded in the header", () => {
+  const dir = scratch();
+  const bin = fakeCodex(dir, "assert-pins");
+  const outputFile = path.join(dir, "verdict-default-cwd.txt");
+  const r = runCodex({ prompt: "converge", outputFile, bin });
+  assert.equal(r.cwd, path.resolve(process.cwd()));
+  assert.match(fs.readFileSync(outputFile, "utf8"), /cwd=\S+/);
 });

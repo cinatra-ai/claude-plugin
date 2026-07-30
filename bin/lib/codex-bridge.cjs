@@ -14,6 +14,7 @@
 
 const { spawnSync } = require("node:child_process");
 const fs = require("node:fs");
+const path = require("node:path");
 
 // The convergence run is pinned to an explicit model and reasoning effort so a
 // captured verdict is always attributable to a KNOWN model + effort — never the
@@ -156,15 +157,33 @@ function buildCodexArgs({ extraArgs = [] } = {}) {
 const DEFAULT_CODEX_TIMEOUT_MS = 15 * 60 * 1000;
 
 // Run codex with the prompt on STDIN and capture stdout/stderr to a file.
-// Returns { ok, code, outputFile, timedOut }. Read-only/advisory; failures are
-// surfaced, not thrown, so the caller can decide. A timeout kills the process
-// (SIGKILL) and is reported as timedOut:true (ok:false) so the caller never
-// mistakes a hung run for a clean verdict.
-function runCodex({ prompt, outputFile, extraArgs = [], bin = "codex", timeoutMs = DEFAULT_CODEX_TIMEOUT_MS } = {}) {
+// Returns { ok, code, outputFile, timedOut, cwd, sandbox }. Read-only/advisory;
+// failures are surfaced, not thrown, so the caller can decide. A timeout kills
+// the process (SIGKILL) and is reported as timedOut:true (ok:false) so the
+// caller never mistakes a hung run for a clean verdict.
+//
+// `cwd` is the WORKING DIRECTORY the round runs in — normally the checkout of
+// the repository under review, so codex can grep the real source and form its
+// own ground truth instead of judging the prompt. It is resolved to an absolute
+// path and recorded in the capture header, because a verdict that does not say
+// WHERE it ran cannot be shown to have inspected the same tree as the author
+// (the same reason the model and effort are recorded). A cwd that does not
+// exist, or is not a directory, is a HARD failure: silently falling back to the
+// caller's directory would produce a verdict about the wrong tree.
+function runCodex({ prompt, outputFile, extraArgs = [], bin = "codex", timeoutMs = DEFAULT_CODEX_TIMEOUT_MS, cwd = process.cwd() } = {}) {
   if (typeof prompt !== "string" || prompt.length === 0) {
     throw new Error("runCodex: a non-empty prompt string is required (passed on STDIN)");
   }
   if (!outputFile) throw new Error("runCodex: outputFile is required (capture-not-tail)");
+  if (typeof cwd !== "string" || cwd.length === 0) throw new Error("runCodex: cwd must be a non-empty path string");
+  const resolvedCwd = path.resolve(cwd);
+  let cwdStat;
+  try {
+    cwdStat = fs.statSync(resolvedCwd);
+  } catch (err) {
+    throw new Error(`runCodex: cwd '${resolvedCwd}' cannot be read (${err.code || err.message}) — a convergence round must run in the tree it reviews, never a fallback`);
+  }
+  if (!cwdStat.isDirectory()) throw new Error(`runCodex: cwd '${resolvedCwd}' is not a directory`);
   const args = buildCodexArgs({ extraArgs });
   const res = spawnSync(bin, args, {
     input: prompt,
@@ -172,15 +191,17 @@ function runCodex({ prompt, outputFile, extraArgs = [], bin = "codex", timeoutMs
     maxBuffer: 64 * 1024 * 1024,
     timeout: timeoutMs,
     killSignal: "SIGKILL",
+    cwd: resolvedCwd,
   });
   const timedOut = res.error && res.error.code === "ETIMEDOUT";
-  // Record the pinned model + effort alongside the captured verdict so the
-  // verdict is attributable to a specific model and effort. A header is
+  // Record the pinned model + effort — and the sandbox and working directory the
+  // run actually used — alongside the captured verdict, so the verdict is
+  // attributable to a specific model, effort, sandbox and TREE. A header is
   // prepended to the captured file (the raw stdout/stderr follows intact) and
-  // the pinned values are also returned to the caller. Under --strict-config an
-  // ok:true run is proof the pins were applied (an unrecognized key/value would
-  // have hard-failed), so these values are the ones the run actually ran with.
-  const header = `[codex-bridge] codex exec model=${PINNED_CODEX_MODEL} ${REASONING_EFFORT_CONFIG_KEY}=${PINNED_REASONING_EFFORT}\n\n`;
+  // the same values are returned to the caller. Under --strict-config an ok:true
+  // run is proof the pins were applied (an unrecognized key/value would have
+  // hard-failed), so these values are the ones the run actually ran with.
+  const header = `[codex-bridge] codex exec model=${PINNED_CODEX_MODEL} ${REASONING_EFFORT_CONFIG_KEY}=${PINNED_REASONING_EFFORT} sandbox=${PINNED_SANDBOX} cwd=${resolvedCwd}\n\n`;
   let combined = `${header}${res.stdout || ""}${res.stderr || ""}`;
   if (timedOut) {
     combined += `\n[codex-bridge] TIMEOUT after ${timeoutMs}ms — process killed (SIGKILL). Verdict is NOT trustworthy.\n`;
@@ -193,6 +214,8 @@ function runCodex({ prompt, outputFile, extraArgs = [], bin = "codex", timeoutMs
     timedOut: Boolean(timedOut),
     model: PINNED_CODEX_MODEL,
     reasoningEffort: PINNED_REASONING_EFFORT,
+    sandbox: PINNED_SANDBOX,
+    cwd: resolvedCwd,
   };
 }
 
