@@ -1,7 +1,7 @@
 ---
 name: extension-authoring
 user-invocable: false
-description: "Run the full development lifecycle for one cinatra extension in Claude Code: discover before creating, collect the exact scaffold inputs, scaffold with the published cinatra CLI, route payload authoring to the kind specialist, validate after every change, drive PR/CI, and stop at a release-readiness report. Activates for: 'create a cinatra extension', 'new cinatra extension', 'scaffold a cinatra extension', 'cinatra create-extension', 'extension development lifecycle', 'author a cinatra connector', 'validate my extension', 'extension release readiness'. Reuse before new — never conclude 'none exist' from one search surface; scope is asked ONLY for connector and skill (agent/artifact/workflow are locked first-party); run node extension-kind-gate.mjs --package-root . plus npm pack --dry-run after EVERY change, never advance on invalid, cap fix retries at 3; the workflow kind is scheduled for removal (cinatra#1030) — do not start new ones; a pushed tag equal to v<package.json.version> (or the published GitHub Release carrying it, on newer workflow generations) IS the marketplace publish trigger — report release-readiness only, never push such a tag, create or publish a GitHub Release, or publish."
+description: "Run the full development lifecycle for one cinatra extension in Claude Code: discover before creating, collect the exact scaffold inputs, scaffold with the published cinatra CLI, wire the new repository's baseline, route payload authoring to the kind specialist, validate after every change, drive PR/CI, and stop at a release-readiness report. Activates for: 'create a cinatra extension', 'new cinatra extension', 'scaffold a cinatra extension', 'cinatra create-extension', 'extension development lifecycle', 'author a cinatra connector', 'validate my extension', 'extension release readiness', 'new extension repo baseline'. A new repo is not governed by scaffolding alone — pin the GATED reusable release ref (a release job carrying environment: release-approval) against an existing release-approval Environment with admin bypass disabled and no repo-local tag-push automation; copy the FULL gate-caller set from a canonical same-kind repo (byte-identical apart from the per-repo docs-meta-commentary paths); land eslint.config.mjs + the vendored ui-design-system preset (byte-identical to the ci commit the caller pins, with that provenance SHA recorded in eslint.config.mjs) with the first source; scan the REAL published surfaces; enroll the repo in the org manifests at creation or route the enrollment. Reuse before new — never conclude 'none exist' from one search surface; scope is asked ONLY for connector and skill (agent/artifact/workflow are locked first-party); run node extension-kind-gate.mjs --package-root . plus npm pack --dry-run after EVERY change, never advance on invalid, cap fix retries at 3; the workflow kind is scheduled for removal (cinatra#1030) — do not start new ones; a pushed tag equal to v<package.json.version> (or the published GitHub Release carrying it, on newer workflow generations) IS the marketplace publish trigger — report release-readiness only, never push such a tag, create or publish a GitHub Release, or publish."
 argument-hint: "[agent | connector | artifact | skill | workflow] [name]"
 allowed-tools:
   - Read
@@ -17,6 +17,7 @@ triggers:
   - "author a cinatra connector"
   - "validate my extension"
   - "extension release readiness"
+  - "new extension repo baseline"
 antiTriggers:
   - "claude code plugin"
   - "chat assistant skill"
@@ -29,9 +30,10 @@ antiTriggers:
 <objective>
 Run the core lifecycle for developing one cinatra extension in Claude Code:
 discover whether it already exists (reuse before new), collect the exact scaffold
-inputs, scaffold with the published cinatra CLI, route payload authoring to the
-kind specialist skill, validate with the kind gate after EVERY change, take the
-repo through PR/CI, and hand off a release-readiness report. Never release:
+inputs, scaffold with the published cinatra CLI, wire the new repository's
+release/CI/lint/enrollment baseline, route payload authoring to the kind
+specialist skill, validate with the kind gate after EVERY change, take the repo
+through PR/CI, and hand off a release-readiness report. Never release:
 a pushed tag equal to v<package.json.version> — or the published GitHub
 Release carrying it, on newer workflow generations — IS the marketplace
 publish trigger, and the release act needs explicit owner/maintainer approval.
@@ -137,6 +139,70 @@ cinatra create-extension <kind> <name> \
 - Never hand-roll the repo tree — the scaffold carries the manifest stub, the
   kind gate, the README shape, and the CI gates.
 
+## New extension repository baseline (all kinds)
+
+The scaffold produces a package; it does not produce a governed repo. Before the
+first PR, wire the release caller, the full gate-caller set, the repo's own lint
+surface, and the org enrollment. Copy each from a canonical repo of the SAME KIND
+at its `origin/main` — never from memory, never from a stale local clone.
+
+**Release caller — pin the GATED reusable ref.**
+
+- `.github/workflows/release.yml` is a thin caller of
+  `cinatra-ai/.github/.github/workflows/reusable-extension-release.yml`. Pin a ref
+  whose `release` job carries `environment: release-approval` (currently `v0.1.1`
+  @ `1e4448a75dc27b7be4d52ac3ce0734fa7c766957`). The allowlist of gated refs is
+  `cinatra-ai/ci` `config/release-workflow-gated-refs.json`; ANY ref absent from
+  it is treated as UNGATED and the pin scan fails CLOSED. Putting a new ref on
+  that allowlist means first confirming its release job still carries the stanza.
+- The `release-approval` Environment must EXIST on the repo, with a required
+  reviewer set and admin bypass disabled. A gated ref pinned against a missing or
+  admin-bypassable Environment is a wall that is not there.
+- Releases are cut only through the org release process. A scaffold NEVER adds
+  its own tag-push automation; the caller's triggers stay `push: tags: ['v*']`
+  plus a manual `workflow_dispatch`, and nothing in the repo pushes that tag.
+
+**CI baseline — copy the FULL caller set from the canonical same-kind repo.**
+
+- The callers are byte-identical org-wide by design EXCEPT for their repo-specific
+  inputs. Copy them; never hand-write one and never ship a subset.
+- Take the set the canonical repo of YOUR kind carries rather than deciding gate
+  by gate which ones apply. The connector baseline carries eight gate callers —
+  `actions-pinned-gate`, `gitignore-gate`, `source-leak-gate`, `secret-scan-gate`,
+  `truthful-attribution-gate`, `ui-design-system-gate`, `docs-meta-commentary`,
+  `toast-banner-gate` — alongside the repo's own `ci` workflow.
+- The one input that is NOT copied is `docs-meta-commentary`'s `paths:` — it must
+  list the repo's REAL published surfaces (the `README.md` / `CHANGELOG.md` /
+  `docs/` pages that actually exist) and is widened in the same PR as each new
+  surface. A path that does not exist yet and a landed surface left uncovered are
+  both dishonest.
+
+**Lint surface — it lands with the FIRST source drop.**
+
+- `ui-design-system-gate` runs the repo's own flat config
+  (`npx eslint . --no-inline-config`), so `eslint.config.mjs`, the vendored preset
+  at `tools/ui-design-system.flat.mjs`, and the `@typescript-eslint/parser`
+  devDependency ship with the first source — not later. The caller enforces
+  nothing without the config it runs: land the caller and its config together.
+- The vendored preset stays BYTE-IDENTICAL to `cinatra-ai/ci`
+  `config/ui-design-system.flat.mjs` at the exact ci commit the caller workflow
+  pins. Record that provenance SHA in `eslint.config.mjs` — not inside the
+  vendored file, which must not diverge from upstream — and verify the SHA you
+  write against the blob you actually vendored. Copying the config from another
+  repo carries that repo's SHA.
+- Exemptions are files-glob carve-outs inside the preset; `--no-inline-config`
+  makes an inline `eslint-disable` unenforceable by construction.
+
+**Org enrollment — at creation, not later.**
+
+- Creating the repo includes enrolling it in the org gate manifests and
+  published-surface lists (`cinatra-ai/ci` `config/meta-commentary-inventory.json`,
+  `config/gate-suite-inventory.json`). A repo absent from those inventories is not
+  measured by the org coverage sweeps that keep every other repo honest.
+- If the enrolling repo or tooling is not reachable from where you are, ROUTE the
+  enrollment (raise it against the owning repo) — never skip it, and never report
+  the extension as done with the enrollment outstanding.
+
 ## Kind routing (payload authoring goes to the specialist)
 
 | Kind | Specialist | Scope policy |
@@ -166,8 +232,9 @@ explicit user override, re-check the epic state first and record the override.
 ## PR / CI
 
 - Branch, commit, open a PR in the extension repo; never work on a default branch.
-- Every scaffolded repo gate must be CONCLUDED green (ci, source-leak-gate,
-  actions-pinned-gate, gitignore-gate). Pending is not green.
+- Every gate in the repository baseline set must be CONCLUDED green. Pending is
+  not green, and a gate whose input never landed (an eslint caller with no config,
+  a docs scan over a surface not yet in `paths:`) is not evidence either way.
 - A red gate follows the same fix loop and the same 3-retry cap.
 
 ## Release-readiness handoff (hard stop)
@@ -205,10 +272,15 @@ explicit user override, re-check the epic state first and record the override.
    start one; on explicit override, re-check the epic state first.
 5. Probe the CLI, then scaffold with the non-interactive form above; verify exit
    code 0 and the tree at `<dir>/<slug>`.
-6. Baseline-validate the fresh scaffold (gate + `npm pack --dry-run`) before any
+6. Wire the repository baseline: the gated release caller plus its
+   `release-approval` Environment, the full gate-caller set copied byte-identical
+   from the canonical same-kind repo, the eslint flat config and vendored preset
+   (with the caller's ci SHA), the real published-surface path set, and the org
+   enrollment (route it if you cannot perform it).
+7. Baseline-validate the fresh scaffold (gate + `npm pack --dry-run`) before any
    authoring.
-7. Route payload authoring to the kind specialist; re-run the validate loop after
+8. Route payload authoring to the kind specialist; re-run the validate loop after
    EVERY change; never advance invalid; stop and report after 3 failed fixes.
-8. PR/CI: branch, push, open the PR, and get every gate to a CONCLUDED green.
-9. Hand off the release-readiness report bound to the exact SHA, then STOP —
-   never tag, Release, or publish.
+9. PR/CI: branch, push, open the PR, and get every gate to a CONCLUDED green.
+10. Hand off the release-readiness report bound to the exact SHA, then STOP —
+    never tag, Release, or publish.
