@@ -1,7 +1,7 @@
 ---
 name: simplified-technical-english
 user-invocable: false
-description: "Write and check technical content against ASD-STE100 Simplified Technical English, the controlled language that ASD maintains through the STE Maintenance Group (STEMG). An author aid and a linter, never a converter. It explains the rules, proposes rewrites, and reports each candidate violation with the rule, the offending span, and a concrete fix. It carries a fixed set of Issue 9 rule numbers that were checked against the official specification (sentence length 5.1 and 6.3, one instruction 5.2, imperative 5.3, active voice 3.6, verb forms 3.1 to 3.5, multi-word nouns 2.1, omitted words 4.2, vertical lists 4.3, paragraphs 6.4 to 6.6, safety 7.1 to 7.3, punctuation and word count 8.1 to 8.7), and it cites no rule number that is not in that set. The approved-word dictionary stays with ASD, so every vocabulary result is advisory and marked unverified unless the official dictionary was actually read."
+description: "Write and check technical content against ASD-STE100 Simplified Technical English. ASD maintains that controlled language through the STE Maintenance Group (STEMG). An author aid and a linter, never a converter. It explains the rules and proposes rewrites. It reports each candidate violation with the rule, the offending span, and a concrete fix or a deferred decision. It carries a fixed set of Issue 9 rule numbers that were checked against the official specification (sentence length 5.1 and 6.3, one instruction 5.2, imperative 5.3, active voice 3.6, verb forms 3.1 to 3.5, multi-word nouns 2.1, omitted words 4.2, vertical lists 4.3, paragraphs 6.4 to 6.6, safety 7.1 to 7.3, punctuation and word count 8.1 to 8.7). It cites no rule number that is not in that set. The approved-word dictionary stays with ASD. Every vocabulary result is advisory and marked unverified unless you read the official dictionary."
 when_to_use: "Trigger phrases: \"simplified technical english\", \"asd-ste100\", \"check this against ste\", \"rewrite this in ste\", \"controlled language check\", \"is this ste compliant\", \"ste sentence length rule\", \"approved words dictionary\", \"s1000d language rules\", \"ata ispec 2200 writing rules\". Use it for technical documentation, procedures, work cards, and safety text. Do not use it for general prose, email, or plain-language legal work."
 argument-hint: "[lint | rewrite | explain | procedures | descriptions]"
 allowed-tools:
@@ -31,13 +31,14 @@ antiTriggers:
 <objective>
 Help an author write technical content in Simplified Technical English
 (ASD-STE100) and report where a draft appears to break the standard. Do two
-jobs. First, LINT: read the text, apply the checkable rules below, and give one
-finding per candidate violation with the rule, the exact span, and a concrete
-fix. Second, AUTHOR or REWRITE: attempt text that follows the same rules, and
-mark every place where the result needs a decision that only a subject-matter
-expert can make. Claim no more than that. This skill cannot certify
-conformance, it cannot confirm a word against a dictionary it does not carry,
-and it cannot guarantee that a rewrite keeps the technical meaning.
+jobs. First, LINT: read the text and apply the checkable rules below. Give one
+finding per candidate violation. Each finding names the rule, the exact span,
+and a concrete fix or a deferred decision. Second, AUTHOR or REWRITE: attempt
+text that follows the same rules. Mark every place where the result needs a
+decision that only a subject-matter expert can make. Claim no more than that.
+This skill cannot certify conformance. It cannot confirm a word against a
+dictionary it does not carry. It cannot guarantee that a rewrite keeps the
+technical meaning.
 </objective>
 
 # Workflow: simplified-technical-english
@@ -54,11 +55,11 @@ and it cannot guarantee that a rewrite keeps the technical meaning.
 
 ## What STE is, and what it is not
 
-STE has two parts. Part 1 holds 53 writing rules in 9 sections: words,
-multi-word nouns, verbs, sentences, procedural writing, descriptive writing,
-safety instructions, punctuation and word count, and writing practices. Part 2
-is a dictionary of approximately 900 approved words, built on one principle:
-one word, one part of speech, one meaning.
+STE has two parts. Part 1 holds 53 writing rules in 9 sections. The sections
+are words, multi-word nouns, verbs, sentences, procedural writing, descriptive
+writing, safety instructions, punctuation and word count, and writing
+practices. Part 2 is a dictionary of approximately 900 approved words, built on
+one principle: one word, one part of speech, one meaning.
 
 The goals are practical. STE makes procedures clearer. It makes text easier to
 read for a person whose first language is not English. It makes human and
@@ -159,10 +160,13 @@ different number on every run:
   a period (rule 8.4).
 - Text in parentheses counts as one word in its sentence, and the words inside
   the parentheses also count as their own sentence (rule 8.5).
-- Each of these counts as one word (rule 8.6): a number, a number with its unit
-  of measurement, an abbreviation, an alphanumeric identifier, quoted text, a
-  title or heading, text on a placard or label, and a proper noun of a person,
-  a group, an organization, or a geopolitical entity.
+- Each of these counts as one word (rule 8.6):
+  - a number, or a number with its unit of measurement;
+  - an abbreviation, or an alphanumeric identifier;
+  - quoted text, a title, or a heading;
+  - text on a placard or a label;
+  - a proper noun of a person, a group, an organization, or a geopolitical
+    entity.
 - A hyphenated word counts as one word (rule 8.7).
 
 State the counting method in the report summary. When a sentence sits within
@@ -193,8 +197,8 @@ act before the condition arrives.
 - Fix: name the actor, then make the verb active.
 
 Do not flag every form of "be" plus a past participle. Rule 3.3 uses the past
-participle as an adjective, before a noun or after a form of "to be", "to
-become", or "to stay", and the standard states that this construction is not
+participle as an adjective. It goes before a noun, or after a form of "to be",
+"to become", or "to stay". The standard states that this construction is not
 passive voice. "The unit is disassembled" can be a description of a condition.
 
 So the test has three outcomes. A clear passive with a named agent in a "by"
@@ -312,8 +316,8 @@ not run against the dictionary.
 
 If no approved word seems to carry the technical meaning, route the decision to
 the technical noun and technical verb categories (rules 1.5 to 1.7 and 1.12 to
-1.13), and say which category you think applies and why. The author confirms
-it against the specification.
+1.13). Say which category you think applies, and why. The author confirms it
+against the specification.
 
 ## Report format for a lint run
 
@@ -321,9 +325,11 @@ Report findings in document order. Give each finding a stable ID, so a second
 run over unchanged text produces the same IDs and the same order.
 
 Build the ID as `STE-<line>-<rule-or-category>-<n>`, where `<n>` counts
-findings that share the first two parts. For pasted text that has no file,
-number the lines yourself from 1, starting at the first line of the pasted
-block, and say in the summary that the line numbers are synthetic.
+findings that share the first two parts. `<rule-or-category>` is the selected
+rule number, or the category name when `rule` is empty. "Rules for the fields"
+below sets the selection order, so the ID is deterministic. For pasted text
+that has no file, number the lines yourself from 1. Start at the first line of
+the pasted block. Say in the summary that the line numbers are synthetic.
 
 ```
 [STE-0042-5.1-1]  <file>:<line>
@@ -336,7 +342,7 @@ block, and say in the summary that the line numbers are synthetic.
   measured:   <the count or other measured value, when the rule measures one>
   why:        <the rule in one sentence>
   severity:   blocking | advisory
-  confidence: high | medium | low
+  confidence: high | low
   fix:        "<the proposed rewrite>"  or  deferred
   source:     <required for a vocabulary finding, see above>
   note:       <what a subject-matter expert must confirm>
@@ -348,19 +354,30 @@ Rules for the fields:
   always.
 - `severity` is `blocking` only in CONTRACTED STE mode, and never for
   `vocabulary-unverified`.
-- `confidence` is `low` whenever the test could not separate two readings, such
-  as a possible adjectival participle or a possible simultaneous action.
-- `fix` is `deferred` whenever the rewrite could change the technical meaning.
-  Say what the author must decide. A wrong fix in a procedure is worse than an
-  open finding.
-- One finding per span. When two rules hit the same span, report the more
-  specific rule and name the other in `note`. Do not emit two findings for one
-  span.
+- `confidence` has two values, `high` and `low`. There is no third value. Set it
+  to `low` in exactly these cases:
+  - the measured count sits within two words of the limit (rules 5.1 and 6.3);
+  - the test could not separate two readings, such as a possible adjectival
+    participle (rule 3.3) or a possible simultaneous action (rule 5.2);
+  - the finding is `vocabulary-unverified`.
 
-Close the report with a summary: the mode used, the counting method, the count
-per category, and an explicit list of what you could NOT check. Vocabulary
-belongs on that list unless you read the dictionary. Never report a compliance
-score, and never call a text conformant.
+  In every other case set it to `high`. The three cases above are the complete
+  list, so two runs over unchanged text give the same value.
+- `fix` carries a concrete rewrite, or the value `deferred`. It is `deferred`
+  whenever the rewrite could change the technical meaning. Say what the author
+  must decide. A wrong fix in a procedure is worse than an open finding.
+- One finding per span. When several rules hit the same span, select one rule by
+  number. Read a rule number as a pair of integers: the section, then the rule.
+  The lowest pair wins. So 3.6 wins over 5.1, and 5.1 wins over 5.2. Each rule
+  has one number, so this order always selects exactly one rule. Report that
+  rule, and name every other applicable rule in `note`. A category-only finding,
+  with an empty `rule`, applies only when no number in the table applies. Do not
+  emit two findings for one span.
+
+Close the report with a summary. The summary gives the mode used, the counting
+method, and the count per category. It also gives an explicit list of what you
+could NOT check. Vocabulary belongs on that list unless you read the
+dictionary. Never report a compliance score, and never call a text conformant.
 
 ## Licensing: never bundle the dictionary
 
@@ -370,9 +387,9 @@ list of member organizations and institutions, and it prohibits unauthorized
 distribution without written permission from the STEMG. A public plugin pack is
 not on that list.
 
-- Do not paste the word list, or an extract of it, into this repository, into a
-  generated file, or into a chat answer that reads as a substitute for the
-  dictionary.
+- Do not paste the word list, or an extract of it, into this repository or into
+  a generated file. Do not paste it into a chat answer that reads as a
+  substitute for the dictionary.
 - Do not paste the specification text either. Paraphrase a rule and cite its
   number.
 - Do cite the official specification as the source of truth. Quote a single
@@ -400,16 +417,23 @@ not on that list.
    issue, and which mode. Ask once if the answer is not in the request.
 2. Read the text. Split it into sentences, and classify each one as an
    instruction or as a description. The classification sets the word limit.
-3. Run the checkable rules in order: sentence length with the counting method,
-   one instruction per sentence, voice, verb forms, multi-word nouns, omitted
-   words, vertical lists, paragraphs, safety instructions, punctuation, and the
-   consistency checks. Run the vocabulary pass last, and mark it unverified
-   unless you read the dictionary.
-4. Write one finding per span in the format above, each with a stable ID and a
-   concrete fix, or `fix: deferred` when the meaning could change.
+3. Run the checkable rules in this order:
+   - sentence length, with the counting method;
+   - one instruction per sentence;
+   - voice, then verb forms;
+   - multi-word nouns, then omitted words;
+   - vertical lists, then paragraphs;
+   - safety instructions, then punctuation;
+   - the consistency checks.
+
+   Run the vocabulary pass last. Mark it unverified unless you read the
+   dictionary.
+4. Write one finding per span in the format above. Each finding carries a stable
+   ID. Each finding carries a concrete fix, or `fix: deferred` when the meaning
+   could change.
 5. On request, apply the rewrites with `Edit`, one rule at a time. Apply only
    the findings whose fix is concrete. Leave a deferred finding in the file and
    raise the question. After the edit, say what you changed and what you left.
-6. Close with the limits: the mode, the counting method, what you could not
-   check, and the reminder that a qualified author and a subject-matter expert
+6. Close with the limits: the mode, the counting method, and what you could not
+   check. Add the reminder that a qualified author and a subject-matter expert
    confirm the result before it ships.

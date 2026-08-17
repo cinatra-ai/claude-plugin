@@ -30,8 +30,8 @@ or with Cinatra. The skills cover:
   Renovate/dependency-PR handling.
 - **Technical writing**: write and check technical content against Simplified
   Technical English (ASD-STE100). It carries the checkable rules for procedures
-  and descriptions, a rewrite path, and a lint report that names the rule, the
-  offending span and a concrete fix.
+  and descriptions, and a rewrite path. Its lint report names the rule, the
+  offending span, and a concrete fix or a deferred decision.
 - **Epic planning and issue creation** — a slash command that plans an epic
   against a real codebase and a real project board, presents it for approval and
   creates nothing until it gets one, plus the reusable issue-creation skill it
@@ -240,7 +240,7 @@ skill itself still stays `user-invocable: false`.
 | `plugin-baseline` | Recommend and, on request, install a versioned/pinned Claude plugin baseline with a per-plugin required/recommended tier, rationale, a privacy note, and a runtime probe that each plugin actually loads. | Asking which Claude plugins to install, or wanting to set up a recommended baseline. |
 | `source-leak-discipline` | Ship planning-tracked work past a source-leak gate: the two-branch model (a private, never-pushed planning branch + a product branch cut fresh from the remote default), proven gate-clean before opening the PR. | Before opening a PR on a gated repo that carries local planning artifacts. |
 | `renovate-handling` | Handle a Renovate/dependency PR: an onboarding/config-only PR may land any time, a routine dependency PR waits for the weekly window, a security update is allowed outside it, and a rolling lock is never hand-bumped. | Reviewing or merging a Renovate/dependency PR. |
-| `simplified-technical-english` | Author aid + linter for Simplified Technical English (ASD-STE100): the checkable rules (20-word instructions, 25-word descriptive sentences, the ASD word-count method, active voice with a named actor, one instruction per sentence with its simultaneous-action exception, approved verb forms, 3-word multi-word nouns, no omitted words, one word / one meaning, safety statements that open with a command, vertical lists), the technical noun / technical verb categories, a fixed set of verified Issue 9 rule numbers that bounds what it may cite, and a finding format with stable IDs, confidence and a deferred-fix state. Ships the rules and the method only: the approved-word dictionary stays with ASD and every vocabulary result is advisory. | Writing or reviewing technical documentation, procedures or safety text that must read clearly, translate cleanly, or satisfy an S1000D / ATA iSpec 2200 STE requirement. |
+| `simplified-technical-english` | Author aid + linter for Simplified Technical English (ASD-STE100). It carries the checkable rules (20-word instructions, 25-word descriptive sentences, the ASD word-count method, active voice with a named actor, one instruction per sentence with its simultaneous-action exception, approved verb forms, 3-word multi-word nouns, no omitted words, one word / one meaning, safety statements that open with a command, vertical lists). It carries the technical noun / technical verb categories. A fixed set of verified Issue 9 rule numbers bounds what it may cite. Its finding format has stable IDs, a two-state confidence and a deferred-fix state. It ships the rules and the method only. The approved-word dictionary stays with ASD, so every vocabulary result is advisory. | Writing or reviewing technical documentation, procedures or safety text that must read clearly, translate cleanly, or satisfy an S1000D / ATA iSpec 2200 STE requirement. |
 
 See each skill file under [`skills/`](./skills/) (`skills/<name>/SKILL.md`) for
 the full trigger list and workflow body.
