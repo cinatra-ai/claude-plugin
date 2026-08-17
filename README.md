@@ -28,6 +28,10 @@ or with Cinatra. The skills cover:
   planning hygiene, source-leak-gate discipline, machine/settings hygiene,
   multi-repo workspace setup, a recommended Claude plugin baseline, and
   Renovate/dependency-PR handling.
+- **Technical writing** — write and check technical content against Simplified
+  Technical English (ASD-STE100): the checkable rules for procedures and
+  descriptions, a rewrite path, and a lint report that names the rule, the
+  offending span and a concrete fix.
 - **Epic planning and issue creation** — a slash command that plans an epic
   against a real codebase and a real project board, presents it for approval and
   creates nothing until it gets one, plus the reusable issue-creation skill it
@@ -236,6 +240,7 @@ skill itself still stays `user-invocable: false`.
 | `plugin-baseline` | Recommend and, on request, install a versioned/pinned Claude plugin baseline with a per-plugin required/recommended tier, rationale, a privacy note, and a runtime probe that each plugin actually loads. | Asking which Claude plugins to install, or wanting to set up a recommended baseline. |
 | `source-leak-discipline` | Ship planning-tracked work past a source-leak gate: the two-branch model (a private, never-pushed planning branch + a product branch cut fresh from the remote default), proven gate-clean before opening the PR. | Before opening a PR on a gated repo that carries local planning artifacts. |
 | `renovate-handling` | Handle a Renovate/dependency PR: an onboarding/config-only PR may land any time, a routine dependency PR waits for the weekly window, a security update is allowed outside it, and a rolling lock is never hand-bumped. | Reviewing or merging a Renovate/dependency PR. |
+| `simplified-technical-english` | Author aid + linter for Simplified Technical English (ASD-STE100): the checkable rules (20-word instructions / 25-word sentences, active voice with a named actor, one instruction per sentence, approved verb forms, 3-word noun clusters, no omitted sentence parts, one word / one meaning, safety statements that open with a command, vertical lists), the Technical Name / Technical Verb exception, and a finding format that pairs every violation with a concrete fix. Ships the rules and the method only — the approved-word dictionary stays with ASD. | Writing or reviewing technical documentation, procedures or safety text that must read clearly, translate cleanly, or satisfy an S1000D / ATA i2200 STE requirement. |
 
 See each skill file under [`skills/`](./skills/) (`skills/<name>/SKILL.md`) for
 the full trigger list and workflow body.
