@@ -161,10 +161,10 @@ different number on every run:
 - Text in parentheses counts as one word in its sentence, and the words inside
   the parentheses also count as their own sentence (rule 8.5).
 - Each of these counts as one word (rule 8.6):
-  - a number, or a number with its unit of measurement;
-  - an abbreviation, or an alphanumeric identifier;
-  - quoted text, a title, or a heading;
-  - text on a placard or a label;
+  - a number, or a number with its unit of measurement.
+  - an abbreviation, or an alphanumeric identifier.
+  - quoted text, a title, or a heading.
+  - text on a placard or a label.
   - a proper noun of a person, a group, an organization, or a geopolitical
     entity.
 - A hyphenated word counts as one word (rule 8.7).
@@ -190,7 +190,7 @@ act before the condition arrives.
 ### Active voice (rules 3.6 and 3.3)
 
 - In a procedure, use the active voice. Every instruction is an imperative
-  (rule 5.3), or it names its actor.
+  (rule 5.3).
 - In descriptive writing, rule 3.6 permits the passive voice ONLY when the
   agent is unknown. "The agent is irrelevant" is not an exception in the
   standard. Do not offer it as one.
@@ -233,13 +233,22 @@ English is a candidate for review, and only the dictionary settles it.
 This skill does not carry the dictionary, so it cannot settle anything. See
 "Vocabulary" below for what you may and may not write in a report.
 
-Two rules need no dictionary and stay checkable:
+One rule here needs no dictionary and stays checkable:
 
-- Do not join approved words into a phrasal verb (rule 9.3). A phrasal verb
-  means something different from the sum of its parts.
 - Use one term for one part through the whole document (rule 9.4). If the text
   calls it the drain valve once, it is the drain valve everywhere. This is an
   internal-consistency check, so run it and report it with confidence.
+
+Rule 9.3 is not that kind of rule, because the dictionary decides it. Do not
+join approved words into a phrasal verb, because such a pair carries a meaning
+that its separate parts do not carry. Issue 9 approves a small number of
+phrasal verbs, and it gives each of them a restricted meaning that only the
+dictionary states. Issue 9 also records that the dictionary does not usually
+list a phrasal verb as unapproved, so an absent entry proves nothing. A phrasal
+verb that you find is therefore a candidate, not a violation. Report it with
+`confidence: low` and `severity: advisory` unless you read the dictionary entry
+during this run. When you read the entry, record it in `source` and set the
+confidence that the entry supports.
 
 ### Multi-word nouns (rules 2.1 and 2.2)
 
@@ -271,12 +280,16 @@ of actions.
 
 ### Safety instructions (rules 7.1 to 7.3)
 
-- Use the applicable word, such as "warning" or "caution", to identify the
-  level of risk (rule 7.1).
-- Start the safety instruction with a clear and accurate command or condition
-  (rule 7.2). Never start it with background.
-- Give the explanation that shows the risk or the possible result (rule 7.3).
-  State it after the command, not instead of it.
+- Rule 7.1 wants a signal word that tells the reader how serious the risk is.
+  Issue 9 follows the aerospace and defence conventions. A warning covers a
+  risk of injury or death. A caution covers a risk of damage to equipment.
+  Another industry can use other words, and rules 7.1 to 7.3 still govern the
+  content.
+- Rule 7.2 puts the command first, or the condition that governs the command.
+  Never open a safety instruction with background.
+- Rule 7.3 wants the reason as well: what the risk is, or what happens to the
+  reader who ignores the instruction. The reason follows the command. It does
+  not replace the command.
 
 Put the safety statement before the step it protects. Correct shape: "Do not
 touch the terminals. High voltage can kill you." Wrong shape: "There is a
@@ -284,9 +297,11 @@ possibility of electric shock during this procedure."
 
 ### Punctuation (rules 8.1 and 8.2)
 
-The semicolon is not permitted in STE (rule 8.1), because it lets an author
-build very long sentences. Replace it with a period or restructure the
-sentence. Use hyphens to connect words that are directly related (rule 8.2).
+Rule 8.1 keeps the standard English punctuation marks and drops exactly one,
+the semicolon. A semicolon invites an author to run two sentences into one.
+Where a draft carries one, close the first clause with a period, or rebuild
+the sentence. Rule 8.2 puts the hyphen to work joining words that belong
+together.
 
 ## Vocabulary: what you may and may not say
 
@@ -295,8 +310,9 @@ claim.
 
 - You MAY say that a word is a candidate for review, and why.
 - You MAY apply the rules that need no dictionary: part-of-speech consistency
-  inside the document, phrasal verbs (rule 9.3), and consistent terminology
-  (rule 9.4).
+  inside the document, and consistent terminology (rule 9.4).
+- You MAY report a phrasal verb (rule 9.3) as a candidate. Only the dictionary
+  entry settles whether Issue 9 approves that pair and with which meaning.
 - You MAY NOT call a word approved or unapproved unless you actually read the
   entry in the official dictionary during this run.
 - You MAY NOT propose a substitution as an approved alternative on that basis
@@ -336,7 +352,8 @@ the pasted block. Say in the summary that the line numbers are synthetic.
   rule:       5.1                      (a number from the table above, or empty)
   category:   sentence-length | one-instruction | voice | verb-form |
               multi-word-noun | omitted-word | vertical-list | paragraph |
-              safety | punctuation | vocabulary-unverified | consistency
+              safety | punctuation | phrasal-verb | vocabulary-unverified |
+              consistency
   issue:      ASD-STE100 Issue 9
   span:       "<the exact offending text>"
   measured:   <the count or other measured value, when the rule measures one>
@@ -344,7 +361,7 @@ the pasted block. Say in the summary that the line numbers are synthetic.
   severity:   blocking | advisory
   confidence: high | low
   fix:        "<the proposed rewrite>"  or  deferred
-  source:     <required for a vocabulary finding, see above>
+  source:     <required for a vocabulary or phrasal-verb finding, see above>
   note:       <what a subject-matter expert must confirm>
 ```
 
@@ -352,16 +369,19 @@ Rules for the fields:
 
 - `rule` stays empty when the number is not in the table. Fill `category`
   always.
-- `severity` is `blocking` only in CONTRACTED STE mode, and never for
-  `vocabulary-unverified`.
+- `severity` is `blocking` only in CONTRACTED STE mode. It is never `blocking`
+  for `vocabulary-unverified`. It is never `blocking` for a `phrasal-verb`
+  finding whose dictionary entry you did not read.
 - `confidence` has two values, `high` and `low`. There is no third value. Set it
   to `low` in exactly these cases:
-  - the measured count sits within two words of the limit (rules 5.1 and 6.3);
+  - the measured count sits within two words of the limit (rules 5.1 and 6.3).
   - the test could not separate two readings, such as a possible adjectival
-    participle (rule 3.3) or a possible simultaneous action (rule 5.2);
+    participle (rule 3.3) or a possible simultaneous action (rule 5.2).
+  - the finding is a phrasal verb (rule 9.3) and you did not read the
+    dictionary entry.
   - the finding is `vocabulary-unverified`.
 
-  In every other case set it to `high`. The three cases above are the complete
+  In every other case set it to `high`. The four cases above are the complete
   list, so two runs over unchanged text give the same value.
 - `fix` carries a concrete rewrite, or the value `deferred`. It is `deferred`
   whenever the rewrite could change the technical meaning. Say what the author
@@ -403,7 +423,9 @@ not on that list.
 - **Technical accuracy** belongs to the subject-matter expert. This skill
   checks language, never facts.
 - **The authoritative vocabulary** belongs to the official ASD specification.
-- **The authoritative rule text** belongs there too. This skill paraphrases.
+- **The authoritative rule text** belongs there too. This skill restates the
+  rules in its own words, for teaching only. Where a restatement here and the
+  specification differ, the specification is right.
 - **Document structure and information typing** belong to S1000D or to the ATA
   specification in force, not here.
 - **Terminology decisions** belong to the program's terminology list. This
@@ -418,12 +440,12 @@ not on that list.
 2. Read the text. Split it into sentences, and classify each one as an
    instruction or as a description. The classification sets the word limit.
 3. Run the checkable rules in this order:
-   - sentence length, with the counting method;
-   - one instruction per sentence;
-   - voice, then verb forms;
-   - multi-word nouns, then omitted words;
-   - vertical lists, then paragraphs;
-   - safety instructions, then punctuation;
+   - sentence length, with the counting method.
+   - one instruction per sentence.
+   - voice, then verb forms.
+   - multi-word nouns, then omitted words.
+   - vertical lists, then paragraphs.
+   - safety instructions, then punctuation.
    - the consistency checks.
 
    Run the vocabulary pass last. Mark it unverified unless you read the
