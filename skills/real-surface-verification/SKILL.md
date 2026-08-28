@@ -80,8 +80,9 @@ evidence reference above — and both skills reference it. Do not duplicate it h
   written to ABSOLUTE paths under the task's org `.claude/scratch/` subdir —
   never a bare relative filename (the working directory may be the org root), and
   never into the product repository's own checkout. That capture is local and
-  temporary; a picture that must be visible on a PR is then published and
-  embedded per the proof-publish procedure below — never committed into the repo.
+  temporary; a picture that must be visible on a PR is then made visible per the
+  proof-publish procedure below — published and embedded for a public repository,
+  checklist-recorded for a private one — never committed into the repo.
   A passing unit test is not a substitute for seeing the change in the running UI.
 - **Tool / integration changes → the real tools.** Exercise the real MCP tools and
   the real integration path, not a mocked shim. A connector or agent surface is
@@ -89,18 +90,23 @@ evidence reference above — and both skills reference it. Do not duplicate it h
 - **Auth / end-to-end flows → a real authenticated run.** Run the genuine
   end-to-end path with real auth against seeded fixtures; a fixture-seeded run that
   exercises the production code path is evidence, a hand-waved "should work" is not.
+  A REAL verification input is a named fixture in a normal fixture location
+  (`tests/**`, `__fixtures__/`) with a descriptive name — never a `proof/` or
+  `evidence/` folder, and never named after an issue number.
 - **Never a silent waiver.** If a surface genuinely cannot be driven here, say so
   explicitly and route to the operator — do not quietly downgrade to a stub and
   call it proven.
 
 ## Any UI-work closes only on recorded screenshots (the universal close invariant)
 
-The "screenshots/video published and embedded on the PR/issue; no captured proof,
-no close" rule applies to **ANY UI-work — every change that adds or alters a
+The "screenshots/video captured, then made visible on the PR/issue per the
+proof-publish procedure below — published and embedded for a public repository,
+checklist-recorded for a private one — no captured proof, no close" rule applies
+to **ANY UI-work — every change that adds or alters a
 user-visible surface — not only the design-surface (spec-covered) case below.** An
 unspecced/internal surface, a UI bugfix, or a new element with no spec yet is held
-to the same bar: published, embedded screenshots of everything implemented on the
-PR/issue before close (the proof-publish procedure immediately below); an
+to the same bar: every implemented surface captured and made visible on the
+PR/issue before close, by that same visibility-conditional procedure; an
 uncaptured or unpublished "verified" claim is fabrication, exactly like an
 uncaptured "design-verified" or "codex-converged" claim. **CI-green is the floor,
 not the proof.**
@@ -108,7 +114,8 @@ not the proof.**
 The **infeasible-surface fallback does NOT satisfy this gate for any UI-work:** an
 infeasible-surface record + the strongest available replacement checks are INTERIM
 evidence only — the UI-work issue stays **open or explicitly blocked** until the
-required screenshots can actually be captured and published; it never closes on
+required screenshots can actually be captured and made visible per that
+procedure; it never closes on
 the fallback alone (this hardens the general "never a silent waiver" rule above
 for UI-work).
 
@@ -124,9 +131,12 @@ not duplicate) for its spec-covered tier.
 ## The proof-publish procedure (capture, publish, embed, durable record)
 
 A screenshot or video is never "recorded on the PR" by attaching it locally or
-pasting a machine path — it is CAPTURED locally, PUBLISHED to a public image
-host, then EMBEDDED by a real link. A lane that reads only this skill still needs
-the whole road, not only the capture step:
+pasting a machine path — it is CAPTURED locally, then made visible on the
+PR/issue by the path the repository's VISIBILITY sets: PUBLISHED to a public
+image host and EMBEDDED by a real link for a public repository, or held locally
+with the checklist recorded directly on the PR/issue for a private one (step 3
+below). A lane that reads only this skill still needs the whole road, not only
+the capture step:
 
 1. **Capture on the real surface.** Drive the change on the real surface (the
    section above) and write the output to the task's own org working area — an
@@ -139,7 +149,10 @@ the whole road, not only the capture step:
    `proofs/`, `proof/`, or `verification/` path and no per-issue proof folder —
    CI refuses these mechanically and a local pre-commit hook does too.
 3. **Publish by pull request to the public image host — public repositories
-   only.** This host is for a PUBLIC repository's pull request; a PRIVATE
+   only.** Check the repository's visibility BEFORE publishing anything —
+   `gh api repos/<owner>/<repo> -q .visibility` — and fail closed as PRIVATE
+   whenever that check is unavailable or answers anything other than `public`.
+   This host is for a PUBLIC repository's pull request; a PRIVATE
    repository's pictures never go here (its folder, branch, and title would
    expose the private repository's name and PR number) — they stay in the
    working area outside every repository, the pull request carries the graded
@@ -194,8 +207,9 @@ build** — not only a dev server:
   element is a violation, not a leftover to ignore.
 - **The recorded proof at close:** the item-by-item checklist extracted from the
   spec (every spec sentence about the surface = a numbered item citing its section
-  anchor, each marked pass/fail) plus screenshots/video, published and embedded on
-  the PR/issue via the proof-publish procedure above. Data fields are part of
+  anchor, each marked pass/fail) plus screenshots/video, made visible on the
+  PR/issue via the proof-publish procedure above (published and embedded for a
+  public repository, checklist-recorded for a private one). Data fields are part of
   conformance (e.g. a rendered name = the manifest displayName, never the
   packageName). Where the spec shows them, the checklist covers the state axes:
   per-kind variants, empty/loading/error/disabled states, responsive breakpoints,
@@ -246,8 +260,11 @@ wrapper, and re-check the actor.
    landed on the real remote/merge state, and check the audit `via:` for any
    privileged write.
 4. For any UI-work, run the proof-publish procedure above: capture to the org
-   working area, publish to `cinatra-ai/engineering-proofs` by pull request,
-   embed the merge-commit permalinks on the product PR/issue, and grade them
-   there before close.
+   working area, check the repository's visibility (`gh api repos/<owner>/<repo>
+   -q .visibility`, fail closed as private when unknown), then either publish to
+   `cinatra-ai/engineering-proofs` by pull request and embed the merge-commit
+   permalinks (public repository), or record the graded checklist directly on
+   the PR/issue with the capture held locally (private repository) — and grade
+   it there before close.
 5. If a surface cannot be driven, REFUSE to certify it and hand off to the operator
    — never a silent waiver.
