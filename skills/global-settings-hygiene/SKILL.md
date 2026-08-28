@@ -58,6 +58,13 @@ Pin browser-automation output (e.g. the Playwright `--output-dir`) under the org
 `.claude/` folder so artifacts are contained and discoverable. Scope any cleanup to
 your OWN uniquely-named subdir — shared scratch can hold another task's live work.
 
+Nothing development-related lives inside a product repository's own tracked tree
+either — no `evidence/`, `pr-evidence/`, `proofs/`, `proof/`, or `verification/`
+path, no per-issue proof folder, no planning notes, no agent scratch, no installs;
+CI refuses these mechanically and a local pre-commit hook does too. A picture
+that must be visible on a PR is published elsewhere and only embedded by link —
+see `real-surface-verification` for the procedure.
+
 > Repo/org GOVERNANCE levers — org rulesets (the Team-plan lever that auto-covers
 > new repos), per-repo branch protection, admin-bypass, tags and archived repos — are
 > NOT agent-config hygiene; that is a separate governance concern outside this
