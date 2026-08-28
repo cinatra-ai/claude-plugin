@@ -80,6 +80,13 @@ The sanctioned org-root allowlist is exactly: repo clone directories, the
 your own uniquely-named subdir; never blanket-remove the shared scratch tree (it
 can hold other live worktrees).
 
+Nothing development-related lives inside a product repository's own tracked tree
+either — no `evidence/`, `pr-evidence/`, `proofs/`, `proof/`, or `verification/`
+path, no per-issue proof folder, no planning notes, no agent scratch, no installs;
+CI refuses these mechanically and a local pre-commit hook does too. A picture
+that must be visible on a PR is published elsewhere and only embedded by link —
+see `real-surface-verification` for the procedure.
+
 ## New-repo currency + deletions
 
 - A NEW reachable cinatra-ai repo (one not yet cloned) is auto-cloned or notified
