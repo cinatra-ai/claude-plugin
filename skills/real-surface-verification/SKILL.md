@@ -97,105 +97,76 @@ evidence reference above — and both skills reference it. Do not duplicate it h
   explicitly and route to the operator — do not quietly downgrade to a stub and
   call it proven.
 
-## Any UI-work closes only on recorded screenshots (the universal close invariant)
+## UI verification and approval
 
-The "screenshots/video captured, then made visible on the PR/issue per the
-proof-publish procedure below — published and embedded for a public repository,
-checklist-recorded for a private one — no captured proof, no close" rule applies
-to **ANY UI-work — every change that adds or alters a
-user-visible surface — not only the design-surface (spec-covered) case below.** An
-unspecced/internal surface, a UI bugfix, or a new element with no spec yet is held
-to the same bar: every implemented surface captured and made visible on the
-PR/issue before close, by that same visibility-conditional procedure; an
-uncaptured or unpublished "verified" claim is fabrication, exactly like an
-uncaptured "design-verified" or "codex-converged" claim. **CI-green is the floor,
-not the proof.**
+Every changed UI surface needs actual captures and an independent grade against
+an approved design. A unit test, source review or green CI result cannot replace
+seeing and exercising the running interface. Evidence must cover every frozen
+cell and acceptance item, including the issue's own subject.
 
-The **infeasible-surface fallback does NOT satisfy this gate for any UI-work:** an
-infeasible-surface record + the strongest available replacement checks are INTERIM
-evidence only — the UI-work issue stays **open or explicitly blocked** until the
-required screenshots can actually be captured and made visible per that
-procedure; it never closes on
-the fallback alone (this hardens the general "never a silent waiver" rule above
-for UI-work).
+An implementation fully covered by an owner-approved design and a current,
+authenticated independent UI-grade PASS needs neither owner-facing PR screenshot
+attachments nor UI-only owner approval. The organization's UI-conformance
+workflow owns the trusted receipt producer, live verifier and merge integration;
+a PR-body boolean, plain checklist or self-reported `mergeReady` is not authority.
+Without that verifier or a valid receipt, do not claim the exemption.
 
-This section STATES the universal invariant and DELEGATES enforcement. The tier
-CLASSIFICATION (spec-covered vs not-spec-covered) and the not-spec-covered
-**evidence-inventory** procedure are owned by a dedicated UI-conformance skill,
-which also makes the check ALWAYS-ON and drives the Playwright pass + screenshots
-onto the PR; loop-level detection + close enforcement is owned by the coordinator.
-The spec-covered **bidirectional conformance mechanics** remain owned HERE — the
-design-surface section below — which the UI-conformance skill references (does
-not duplicate) for its spec-covered tier.
+If approved design coverage is missing or partial, create or amend the design
+spec first. A design-spec PR always requires owner approval and full inline
+screenshots with matching immutable links. Approving a design does not approve
+separate security, protected-path, suite-less, release or deployment actions.
+Those gates remain in force for every implementation.
 
-## The proof-publish procedure (capture, publish, embed, durable record)
+## Private evidence procedure
 
-A screenshot or video is never "recorded on the PR" by attaching it locally or
-pasting a machine path — it is CAPTURED locally, then made visible on the
-PR/issue by the path the repository's VISIBILITY sets: PUBLISHED to a public
-image host and EMBEDDED by a real link for a public repository, or held locally
-with the checklist recorded directly on the PR/issue for a private one (step 3
-below). A lane that reads only this skill still needs the whole road, not only
-the capture step:
+1. **Capture the real surface.** Drive the production-equivalent application in
+   the browser and write captures to an absolute path in the task's private
+   working area, outside every product checkout and branch. Never commit media
+   or run-evidence bundles to a product repository, including an evidence branch.
+2. **Keep captures and full grading private.** Product visibility does not grant
+   permission to publish evidence publicly. Use verified private storage selected
+   by the operator. Preserve actual frame hashes, the frozen design/checklist,
+   application head and independent execution provenance. Do not replace missing
+   captures with a checklist or a claimed pass.
+3. **Grade complete coverage.** Extract every governing spec requirement and
+   check both spec-to-render and render-to-spec. Every structural region,
+   behavioral item and issue-subject requirement must pass. The established
+   detail tolerance applies separately to every cell: at least 95% of wording,
+   spacing and detail items pass, with every tolerated miss recorded as a
+   follow-up. Full coverage is mandatory even when a detail miss is tolerated.
+4. **Use the verified receipt for an implementation.** The trusted workflow
+   derives a sanitized receipt from the actual frozen contract, capture bytes,
+   structured independent grade and execution journal. It binds the exact PR/head,
+   complete changed scope, approved immutable design and governing dependencies.
+   Before relying on it, verify its authenticated author, unedited content,
+   current reference, grading threshold and freshness. A later failed/stale grade,
+   deleted referenced receipt or changed governing spec invalidates the exemption.
+   Keep private paths, images, raw agent identities and full grade prose private.
+5. **Attach private pairs for a design-spec PR.** Use full-resolution inline
+   screenshots plus matching explicit links at immutable revisions in a verified
+   private host. Confirm the host is private and distinct from the product repo,
+   and confirm every image resolves through the authorized reader's access.
+   Capture locally first; publish only by the established private evidence road.
+   A local path or a graded checklist cannot replace those screenshot pairs.
+6. **Record truthful completion.** The implementing PR may reference its
+   authenticated receipt without attaching its private media. Closeout still
+   verifies that the shipped surface renders and works on the actual default
+   branch; retain that evidence privately. A spec-only change never closes an
+   implementation issue. Any durable product record is concise text only and
+   follows the repository's documentation contract.
 
-1. **Capture on the real surface.** Drive the change on the real surface (the
-   section above) and write the output to the task's own org working area — an
-   ABSOLUTE path under `.claude/scratch/`, never a bare relative filename and
-   never into the product repository's own checkout.
-2. **Local and temporary until published.** The capture is unpublished,
-   local-working-area content only — never committed, never pushed to the
-   product repo, and never held on a same-repository "evidence branch." A
-   product repository's tracked tree carries no `evidence/`, `pr-evidence/`,
-   `proofs/`, `proof/`, or `verification/` path and no per-issue proof folder —
-   CI refuses these mechanically and a local pre-commit hook does too.
-3. **Publish by pull request to the public image host — public repositories
-   only.** Check the repository's visibility BEFORE publishing anything —
-   `gh api repos/<owner>/<repo> -q .visibility` — and fail closed as PRIVATE
-   whenever that check is unavailable or answers anything other than `public`.
-   This host is for a PUBLIC repository's pull request; a PRIVATE
-   repository's pictures never go here (its folder, branch, and title would
-   expose the private repository's name and PR number) — they stay in the
-   working area outside every repository, the pull request carries the graded
-   requires/shows/verdict checklist in place of embedded images, and a
-   permalink is added only from a private proofs repository when one is
-   provided, never named or invented here. For a public repository: a picture
-   that must be VISIBLE on a pull request is published to the public repository
-   `cinatra-ai/engineering-proofs` (image host only) — by pull request, never a
-   bare push: branch `proofs/<repository>-<pr-number>`, one folder per pull
-   request (`<repository>/<pr-number>/`), descriptive file names (never slice
-   codes), and a short `README.md` in that folder listing every file with what
-   it requires, what it shows, and its verdict. Open it as a bot pull request
-   titled `proofs(<repository>#<pr-number>): <what the set shows>`, with the
-   folder README as its body, and get the four standard checks green
-   (actions-pinned, gitignore, source-leak, secret-scan) before it merges by
-   squash — the squash record carries one `Assisted-by` line per agent that
-   produced the set. History there is never rewritten and a file a merged pull
-   request cites is never deleted or moved. Never let a secret ride in a
-   capture — retake it, never push it.
-4. **Embed and grade on the product PR/issue.** Take the permalink from the
-   MERGE commit's 40-character sha (never a branch tip, which moves) and verify
-   each one actually answers 200 before embedding it. Embed it on the product
-   PR/issue and grade it there — against the item-by-item checklist for a
-   design-surface change (below), or as the plain implemented-surface record
-   otherwise. This embedded, graded picture — not the local capture — is the
-   "recorded proof at close"; an uncaptured or unpublished "verified" claim is
-   fabrication.
-5. **Durable record, where one is needed beyond the PR.** A verification that
-   needs a durable, human-readable record beyond the PR/issue thread goes in
-   `docs/internals/records/` in the repository the change concerns — text only,
-   dated, named by subject, append-only.
-
-A design-spec render proof follows this same procedure. A design spec is never
-copied into a consumer repository, and neither is its render proof — both stay
-at their real, live source; only the published, embedded proof travels.
+An infeasible surface means verification remains incomplete. Record the blocker
+and the strongest interim checks, but do not certify the UI or close its issue
+on source review or a stub. Escalate only the concrete unresolved blocker; no
+extra owner approval is introduced for an otherwise eligible implementation.
 
 ## Design-surface conformance — bidirectional, against the pinned spec
 
 A **design-surface** change (a user-visible surface covered by a design spec —
 your organization's authoritative `specs/*.html` + tokens source; the issue
 carries the `design-surface` label and pins the exact spec commit) is proven
-only by BIDIRECTIONAL 100%
-conformance, driven as a live Playwright render on a **production-equivalent
+by complete BIDIRECTIONAL coverage under the strict structure/behavior and
+per-cell detail rubric above, driven as a live Playwright render on a **production-equivalent
 build** — not only a dev server:
 
 - **spec→render:** every element, state, and interactive affordance the spec shows
@@ -207,15 +178,15 @@ build** — not only a dev server:
   element is a violation, not a leftover to ignore.
 - **The recorded proof at close:** the item-by-item checklist extracted from the
   spec (every spec sentence about the surface = a numbered item citing its section
-  anchor, each marked pass/fail) plus screenshots/video, made visible on the
-  PR/issue via the proof-publish procedure above (published and embedded for a
-  public repository, checklist-recorded for a private one). Data fields are part of
+  anchor, each graded) plus actual screenshots/video retained privately under the
+  procedure above. The implementation PR references its authenticated receipt;
+  a design-spec PR retains its required private screenshot/link pairs. Data fields are part of
   conformance (e.g. a rendered name = the manifest displayName, never the
   packageName). Where the spec shows them, the checklist covers the state axes:
   per-kind variants, empty/loading/error/disabled states, responsive breakpoints,
   permission-gated states, hover/active, long-text truncation.
-- **No captured proof, no close.** Claiming "design-verified" without a captured,
-  published render is fabrication — exactly like claiming codex-converged without
+- **No captured proof, no close.** Claiming "design-verified" without an actual captured
+  render is fabrication — exactly like claiming codex-converged without
   a captured verdict. Per the universal close invariant above, the
   infeasible-surface fallback (record the reason + strongest replacement checks)
   does NOT satisfy the gate for a design-surface close either: a surface that
@@ -228,8 +199,8 @@ build** — not only a dev server:
 What the ISSUE must carry (the label, the pinned spec commit, the checklist as
 acceptance criteria) is owned by your issue-authoring workflow; this section owns
 the PROVING of it. Making this check ALWAYS-ON for any UI diff (not only when
-someone asks for it) and driving the actual Playwright pass + screenshots to
-land on the PR belongs to a dedicated UI-conformance skill, which operationalizes
+someone asks for it) and driving the actual Playwright pass, private capture and authenticated
+receipt belongs to a dedicated UI-conformance skill, which operationalizes
 this section rather than restating it.
 
 ## A green stub can mask a real boot crash
@@ -259,12 +230,9 @@ wrapper, and re-check the actor.
    exact head SHA, capture output to a file (never tail-piped), confirm the mutation
    landed on the real remote/merge state, and check the audit `via:` for any
    privileged write.
-4. For any UI-work, run the proof-publish procedure above: capture to the org
-   working area, check the repository's visibility (`gh api repos/<owner>/<repo>
-   -q .visibility`, fail closed as private when unknown), then either publish to
-   `cinatra-ai/engineering-proofs` by pull request and embed the merge-commit
-   permalinks (public repository), or record the graded checklist directly on
-   the PR/issue with the capture held locally (private repository) — and grade
-   it there before close.
+4. For UI-work, run the private evidence procedure above and the organization's
+   trusted UI-conformance verifier. Apply the implementation exemption only after
+   its live authenticated PASS; retain design-spec screenshot/approval and all
+   separate merge/release gates.
 5. If a surface cannot be driven, REFUSE to certify it and hand off to the operator
    — never a silent waiver.
