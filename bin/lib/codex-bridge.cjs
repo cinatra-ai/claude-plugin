@@ -48,6 +48,11 @@ const PINNED_CODEX_MODEL = "gpt-5.6-sol";
 const PINNED_REASONING_EFFORT = "max";
 const REASONING_EFFORT_CONFIG_KEY = "model_reasoning_effort";
 
+// Approval policy is pinned under strict config so an ambient on-request policy
+// cannot let an unattended advisory run escalate beyond its sandbox. The
+// approval-setting flags below are the names accepted by codex-cli 0.162.1.
+const PINNED_APPROVAL_POLICY = "never";
+
 // The convergence run is also pinned to the `read-only` sandbox: it is
 // **advisory** — codex reads the source and returns a verdict; it must NOT be
 // able to WRITE to the worktree it is reviewing. `codex exec` defaults to
@@ -55,19 +60,21 @@ const REASONING_EFFORT_CONFIG_KEY = "model_reasoning_effort";
 // (the bare STDIN invocation this bridge replaced silently ran writable).
 const PINNED_SANDBOX = "read-only";
 
-// A caller must NOT re-specify the pinned model or reasoning effort — or escalate
-// the pinned sandbox — through extraArgs. The CLI applies a later `-m`/`-c <key>=`
-// /`-s` on a last-write-wins basis, so a trailing override would silently defeat
-// the pin while the recorded header + result still claim the pinned values — a
-// misattributed verdict (or, for the sandbox, a silently-writable "read-only"
-// run), the exact failure these pins exist to prevent. So reject any extraArg
-// that targets the model, a pinned config key, or the sandbox, in every
-// short/long/attached/`=`-joined form the CLI accepts. A redundant `-s read-only`
-// (restating the pin) is harmless and allowed; any other sandbox value — and the
-// value-less sandbox-escalating flags below — is an escalation and is rejected.
+// A caller must NOT re-specify the pinned model, reasoning effort, or approval
+// policy — or escalate the pinned sandbox — through extraArgs. The CLI applies a
+// later `-m`/`-c <key>=`/`-s` on a last-write-wins basis, so a trailing override
+// would silently defeat the pin while the recorded header + result still claim
+// the pinned values — a misattributed verdict (or, for the sandbox, a silently-
+// writable "read-only" run), the exact failure these pins exist to prevent. So
+// reject any extraArg that targets the model, a pinned config key, the approval
+// policy flags, or the sandbox, in every short/long/attached/`=`-joined form the
+// CLI accepts. A redundant `-s read-only` (restating the pin) is harmless and
+// allowed; any other sandbox value — and the value-less sandbox-escalating flags
+// below — is an escalation and is rejected.
 const MODEL_FLAGS = new Set(["-m", "--model"]);
 const CONFIG_FLAGS = new Set(["-c", "--config"]);
-const PINNED_CONFIG_KEYS = new Set(["model", REASONING_EFFORT_CONFIG_KEY, "sandbox_mode"]);
+const PINNED_CONFIG_KEYS = new Set(["model", REASONING_EFFORT_CONFIG_KEY, "approval_policy", "sandbox_mode"]);
+const APPROVAL_FLAGS = new Set(["-a", "--ask-for-approval"]);
 const SANDBOX_FLAGS = new Set(["-s", "--sandbox"]);
 // Value-less flags that escalate away from the pinned read-only sandbox or drop
 // the safety envelope — each incompatible with an advisory, read-only run:
@@ -105,6 +112,17 @@ function assertNoPinnedOverride(extraArgs) {
         throw new Error(`codex-bridge: '${key}' is pinned — extraArgs must not override it via -c/--config`);
       }
     }
+    // Approval override: `-a x` / `--ask-for-approval x` /
+    // `--ask-for-approval=x` / `-a=x` / `-ax`, plus automatic review. Reject
+    // even a redundant `never`: callers must not supply a competing policy path.
+    if (
+      APPROVAL_FLAGS.has(a)
+      || a.startsWith("--ask-for-approval=")
+      || /^-a.+/.test(a)
+      || a === "--approve-for-me"
+    ) {
+      throw new Error("codex-bridge: the approval policy is pinned 'never' — extraArgs must not set or route approvals");
+    }
     // Sandbox escalation via a value-less flag (bypass / --yolo / --full-auto /
     // bypass-hook-trust): reject unconditionally.
     if (SANDBOX_ESCALATING_FLAGS.has(a)) {
@@ -126,7 +144,7 @@ function assertNoPinnedOverride(extraArgs) {
 // Build the argv for a codex exec convergence run. The prompt is supplied on
 // STDIN by the caller — it is NEVER placed in this argv. Throws if a caller
 // tries to smuggle a prompt as an argument, or to override the pinned model /
-// reasoning effort via extraArgs.
+// reasoning effort / approval policy via extraArgs.
 function buildCodexArgs({ extraArgs = [] } = {}) {
   for (const a of extraArgs) {
     if (typeof a !== "string") throw new Error("codex args must be strings");
@@ -137,9 +155,11 @@ function buildCodexArgs({ extraArgs = [] } = {}) {
   // pinned config key a HARD error (so a renamed/dropped key cannot be silently
   // ignored — the fail-closed guarantee this pin exists to give). `-s read-only`
   // pins the advisory sandbox (codex must not write to the worktree it reviews;
-  // exec defaults to writable). The pinned sandbox + model + reasoning effort are
-  // emitted unconditionally (not folded into caller-supplied extraArgs) so no
-  // invocation path can bypass a pin.
+  // exec defaults to writable). `approval_policy="never"` prevents ambient user
+  // configuration from opening an approval path out of that sandbox. The pinned
+  // sandbox + model + reasoning effort + approval policy are emitted
+  // unconditionally (not folded into caller-supplied extraArgs) so no invocation
+  // path can bypass a pin.
   return [
     "exec",
     "--strict-config",
@@ -147,6 +167,7 @@ function buildCodexArgs({ extraArgs = [] } = {}) {
     "-s", PINNED_SANDBOX,
     "-m", PINNED_CODEX_MODEL,
     "-c", `${REASONING_EFFORT_CONFIG_KEY}=${PINNED_REASONING_EFFORT}`,
+    "-c", `approval_policy="${PINNED_APPROVAL_POLICY}"`,
     ...extraArgs,
   ];
 }
@@ -157,8 +178,9 @@ function buildCodexArgs({ extraArgs = [] } = {}) {
 const DEFAULT_CODEX_TIMEOUT_MS = 15 * 60 * 1000;
 
 // Run codex with the prompt on STDIN and capture stdout/stderr to a file.
-// Returns { ok, code, outputFile, timedOut, cwd, sandbox }. Read-only/advisory;
-// failures are surfaced, not thrown, so the caller can decide. A timeout kills
+// Returns { ok, code, outputFile, timedOut, cwd, sandbox, approvalPolicy }.
+// Read-only/advisory; failures are surfaced, not thrown, so the caller can
+// decide. A timeout kills
 // the process (SIGKILL) and is reported as timedOut:true (ok:false) so the
 // caller never mistakes a hung run for a clean verdict.
 //
@@ -194,14 +216,15 @@ function runCodex({ prompt, outputFile, extraArgs = [], bin = "codex", timeoutMs
     cwd: resolvedCwd,
   });
   const timedOut = res.error && res.error.code === "ETIMEDOUT";
-  // Record the pinned model + effort — and the sandbox and working directory the
-  // run actually used — alongside the captured verdict, so the verdict is
-  // attributable to a specific model, effort, sandbox and TREE. A header is
+  // Record the pinned model + effort — and the approval policy, sandbox, and
+  // working directory the run actually used — alongside the captured verdict,
+  // so the verdict is attributable to a specific model, effort, approval policy,
+  // sandbox and TREE. A header is
   // prepended to the captured file (the raw stdout/stderr follows intact) and
   // the same values are returned to the caller. Under --strict-config an ok:true
   // run is proof the pins were applied (an unrecognized key/value would have
   // hard-failed), so these values are the ones the run actually ran with.
-  const header = `[codex-bridge] codex exec model=${PINNED_CODEX_MODEL} ${REASONING_EFFORT_CONFIG_KEY}=${PINNED_REASONING_EFFORT} sandbox=${PINNED_SANDBOX} cwd=${resolvedCwd}\n\n`;
+  const header = `[codex-bridge] codex exec model=${PINNED_CODEX_MODEL} ${REASONING_EFFORT_CONFIG_KEY}=${PINNED_REASONING_EFFORT} sandbox=${PINNED_SANDBOX} approval_policy=${PINNED_APPROVAL_POLICY} cwd=${resolvedCwd}\n\n`;
   let combined = `${header}${res.stdout || ""}${res.stderr || ""}`;
   if (timedOut) {
     combined += `\n[codex-bridge] TIMEOUT after ${timeoutMs}ms — process killed (SIGKILL). Verdict is NOT trustworthy.\n`;
@@ -215,6 +238,7 @@ function runCodex({ prompt, outputFile, extraArgs = [], bin = "codex", timeoutMs
     model: PINNED_CODEX_MODEL,
     reasoningEffort: PINNED_REASONING_EFFORT,
     sandbox: PINNED_SANDBOX,
+    approvalPolicy: PINNED_APPROVAL_POLICY,
     cwd: resolvedCwd,
   };
 }
@@ -225,5 +249,6 @@ module.exports = {
   PINNED_CODEX_MODEL,
   PINNED_REASONING_EFFORT,
   REASONING_EFFORT_CONFIG_KEY,
+  PINNED_APPROVAL_POLICY,
   PINNED_SANDBOX,
 };

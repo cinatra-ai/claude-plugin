@@ -78,8 +78,10 @@ there is exactly one definition.
   never write to the worktree it is reviewing.
 - Invoke via **STDIN only**, and always through the bridge
   (`buildCodexArgs`/`runCodex` in `bin/lib/codex-bridge.cjs`), which pins the
-  sandbox, model, and reasoning effort:
-  `codex exec --strict-config --skip-git-repo-check -s read-only -m gpt-5.6-sol -c model_reasoning_effort=max < prompt.txt`.
+  sandbox, approval policy, model, and reasoning effort:
+  `codex exec --strict-config --skip-git-repo-check -s read-only -m gpt-5.6-sol -c model_reasoning_effort=max -c approval_policy="never" < prompt.txt`.
+  The `never` policy prevents ambient user configuration from opening an
+  approval path out of the read-only sandbox during an unattended run.
   Passing the prompt as an argv **hangs** — never do it. The model tracks the
   **latest Codex** — currently GPT-5.6 "sol" (`gpt-5.6-sol`), resolved from the
   installed CLI, not a frozen guess — at **maximum reasoning effort**
@@ -164,16 +166,19 @@ effort:
 node "$HOME/.claude/dev-core/bin/lib/codex-bridge.cjs"   # buildCodexArgs / runCodex
 ```
 
-`buildCodexArgs()` always emits the pinned `-s read-only`, `-m <model>`, and
-`-c model_reasoning_effort=<effort>` flags — the latest Codex model (currently
-`gpt-5.6-sol`) at `max`, the maximum reasoning tier, in a read-only sandbox —
-under `--strict-config`, never falling back to the CLI default (which is a
-*writable* sandbox). A caller's `extraArgs` cannot escalate the sandbox or
-override the pins — a last-write-wins override is rejected. `runCodex({ prompt, outputFile, cwd })` feeds the
+`buildCodexArgs()` always emits the pinned `-s read-only`, `-m <model>`,
+`-c model_reasoning_effort=<effort>`, and `-c approval_policy="never"` flags —
+the latest Codex model (currently `gpt-5.6-sol`) at `max`, the maximum reasoning
+tier, in a read-only sandbox with no approval escalation path — under
+`--strict-config`, never falling back to the CLI defaults. A caller's `extraArgs`
+cannot escalate the sandbox, change the approval policy, or override the other
+pins — a last-write-wins override is rejected. `runCodex({ prompt, outputFile, cwd })` feeds the
 prompt on STDIN, writes the combined output to `outputFile` (capture-not-tail)
-with a header recording the pinned model + effort + sandbox + working directory,
-and returns `{ ok, code, model, reasoningEffort, sandbox, cwd, … }` so the
-captured verdict is attributable to a specific model, effort and TREE. A pinned model or effort the installed CLI
+with a first-line header recording the pinned model + effort + sandbox + approval
+policy + working directory, and returns
+`{ ok, code, model, reasoningEffort, sandbox, approvalPolicy, cwd, … }` so the
+captured verdict is attributable to a specific model, effort, approval policy,
+and TREE. A pinned model or effort the installed CLI
 rejects — an invalid effort value, or an unrecognized config key (`--strict-config`
 turns a silently-ignored key into a hard error) — surfaces as `ok:false` (a
 visible failure), never a silent downgrade.
