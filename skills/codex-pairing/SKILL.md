@@ -172,7 +172,9 @@ the latest Codex model (currently `gpt-5.6-sol`) at `max`, the maximum reasoning
 tier, in a read-only sandbox with no approval escalation path — under
 `--strict-config`, never falling back to the CLI defaults. A caller's `extraArgs`
 cannot escalate the sandbox, change the approval policy, or override the other
-pins — a last-write-wins override is rejected. `runCodex({ prompt, outputFile, cwd })` feeds the
+pins — a last-write-wins override is rejected. A caller may harmlessly restate
+the approval pin as `-c approval_policy=never`, just as with `-s read-only`.
+`runCodex({ prompt, outputFile, cwd })` feeds the
 prompt on STDIN, writes the combined output to `outputFile` (capture-not-tail)
 with a first-line header recording the pinned model + effort + sandbox + approval
 policy + working directory, and returns

@@ -202,15 +202,49 @@ test("buildCodexArgs rejects a reasoning-effort (or model) override via -c/--con
   }
 });
 
-test("buildCodexArgs rejects an approval_policy override via -c/--config in extraArgs, in every form", () => {
-  for (const extra of [
-    ["-c", "approval_policy=\"on-request\""],
-    ["--config", "approval_policy=\"never\""],
-    ["--config=approval_policy=\"on-request\""],
-    ["-c=approval_policy=\"never\""],
-    ["-capproval_policy=\"on-request\""],
-  ]) {
-    assert.throws(() => buildCodexArgs({ extraArgs: extra }), /'approval_policy' is pinned/, `should reject ${JSON.stringify(extra)}`);
+const approvalConfigForms = [
+  (value) => ["-c", `approval_policy${value}`],
+  (value) => ["--config", `approval_policy${value}`],
+  (value) => [`--config=approval_policy${value}`],
+  (value) => [`-c=approval_policy${value}`],
+  (value) => [`-capproval_policy${value}`],
+];
+
+test("buildCodexArgs accepts a harmless approval_policy=never restatement in every -c/--config form", () => {
+  const values = [
+    "=never", "=\"never\"", "='never'",
+    "  =  never  ", "  =  \"never\"  ", "  =  'never'  ",
+  ];
+  for (const form of approvalConfigForms) {
+    for (const value of values) {
+      const extra = form(value);
+      const args = buildCodexArgs({ extraArgs: extra });
+      assert.deepEqual(args.slice(-extra.length), extra, `should accept ${JSON.stringify(extra)}`);
+      assert.deepEqual(args.slice(0, 10), [
+        "exec",
+        "--strict-config",
+        "--skip-git-repo-check",
+        "-s", PINNED_SANDBOX,
+        "-m", PINNED_CODEX_MODEL,
+        "-c", `${REASONING_EFFORT_CONFIG_KEY}=${PINNED_REASONING_EFFORT}`,
+        "-c",
+      ], `pins should lead ${JSON.stringify(extra)}`);
+      assert.equal(args[10], 'approval_policy="never"', `approval pin should lead ${JSON.stringify(extra)}`);
+    }
+  }
+});
+
+test("buildCodexArgs rejects every other approval_policy value in every -c/--config form", () => {
+  const values = ["=on-request", "=\"untrusted\"", "=on-failure", "=never2", "="];
+  for (const form of approvalConfigForms) {
+    for (const value of values) {
+      const extra = form(value);
+      assert.throws(
+        () => buildCodexArgs({ extraArgs: extra }),
+        /'approval_policy' is pinned/,
+        `should reject ${JSON.stringify(extra)}`,
+      );
+    }
   }
 });
 

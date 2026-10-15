@@ -60,17 +60,17 @@ const PINNED_APPROVAL_POLICY = "never";
 // (the bare STDIN invocation this bridge replaced silently ran writable).
 const PINNED_SANDBOX = "read-only";
 
-// A caller must NOT re-specify the pinned model, reasoning effort, or approval
+// A caller must NOT change the pinned model, reasoning effort, or approval
 // policy — or escalate the pinned sandbox — through extraArgs. The CLI applies a
 // later `-m`/`-c <key>=`/`-s` on a last-write-wins basis, so a trailing override
 // would silently defeat the pin while the recorded header + result still claim
 // the pinned values — a misattributed verdict (or, for the sandbox, a silently-
 // writable "read-only" run), the exact failure these pins exist to prevent. So
-// reject any extraArg that targets the model, a pinned config key, the approval
-// policy flags, or the sandbox, in every short/long/attached/`=`-joined form the
-// CLI accepts. A redundant `-s read-only` (restating the pin) is harmless and
-// allowed; any other sandbox value — and the value-less sandbox-escalating flags
-// below — is an escalation and is rejected.
+// reject any extraArg that changes the model, a pinned config key, the approval
+// policy, or the sandbox, in every short/long/attached/`=`-joined form the CLI
+// accepts. Redundant `-c approval_policy=never` and `-s read-only` restatements
+// are harmless and allowed; any other value — and the value-less sandbox-
+// escalating flags below — is an escalation and is rejected.
 const MODEL_FLAGS = new Set(["-m", "--model"]);
 const CONFIG_FLAGS = new Set(["-c", "--config"]);
 const PINNED_CONFIG_KEYS = new Set(["model", REASONING_EFFORT_CONFIG_KEY, "approval_policy", "sandbox_mode"]);
@@ -108,13 +108,16 @@ function assertNoPinnedOverride(extraArgs) {
     else if (/^-c.+/.test(a)) payload = a.slice(2);
     if (payload != null) {
       const key = String(payload).split("=", 1)[0].trim();
-      if (PINNED_CONFIG_KEYS.has(key)) {
+      const value = String(payload).slice(String(payload).indexOf("=") + 1).trim();
+      const restatesApprovalPin = key === "approval_policy"
+        && [PINNED_APPROVAL_POLICY, `"${PINNED_APPROVAL_POLICY}"`, `'${PINNED_APPROVAL_POLICY}'`].includes(value);
+      if (PINNED_CONFIG_KEYS.has(key) && !restatesApprovalPin) {
         throw new Error(`codex-bridge: '${key}' is pinned — extraArgs must not override it via -c/--config`);
       }
     }
     // Approval override: `-a x` / `--ask-for-approval x` /
     // `--ask-for-approval=x` / `-a=x` / `-ax`, plus automatic review. Reject
-    // even a redundant `never`: callers must not supply a competing policy path.
+    // unconditionally: callers must not supply a competing policy path.
     if (
       APPROVAL_FLAGS.has(a)
       || a.startsWith("--ask-for-approval=")
