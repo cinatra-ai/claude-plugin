@@ -3,6 +3,7 @@
 // Proves:
 //   1. buildCodexArgs() ALWAYS carries the pinned model (-m <model>), the pinned
 //      reasoning effort (-c model_reasoning_effort=<effort>), the pinned
+//      approval policy (-c approval_policy="never"), and the pinned
 //      read-only sandbox (-s read-only — an advisory run must not write to the
 //      worktree it reviews; exec defaults to writable), and --strict-config
 //      — so no convergence round can silently inherit the CLI default, and a
@@ -15,8 +16,9 @@
 //      cannot be a valid codex flag; the prompt rides STDIN — which runCodex
 //      always pipes — and is never placed in argv), AND a caller cannot override
 //      the pinned model or reasoning effort, or ESCALATE the pinned read-only
-//      sandbox, via extraArgs (a trailing last-write-wins override would silently
-//      defeat the pin while the header/result still claimed it) — every
+//      sandbox, or change the pinned approval policy via extraArgs (a trailing
+//      last-write-wins override would silently defeat the pin while the
+//      header/result still claimed it) — every
 //      short/long/attached/`=`-joined form is rejected, plus the two
 //      sandbox-bypass flags; a non-pinned -c key and a redundant `-s read-only`
 //      are still allowed.
@@ -25,8 +27,9 @@
 //      that exits non-zero), surfaces a VISIBLE failure (ok:false) with the
 //      error captured — never a silent downgrade to the CLI default.
 //   4. runCodex records the resolved model + effort alongside the captured
-//      verdict: returned on the result object AND written as a header into the
-//      capture file, so a verdict is auditable to a specific model + effort.
+//      verdict and the pinned approval policy: returned on the result object AND
+//      written as a header into the capture file, so a verdict is auditable to a
+//      specific model + effort + approval policy.
 //   5. runCodex runs the round in the requested working directory — the tree
 //      under review — and records that directory plus the pinned sandbox in the
 //      capture header, so a verdict is auditable to a specific TREE as well as a
@@ -54,6 +57,7 @@ const {
   PINNED_CODEX_MODEL,
   PINNED_REASONING_EFFORT,
   REASONING_EFFORT_CONFIG_KEY,
+  PINNED_APPROVAL_POLICY,
   PINNED_SANDBOX,
 } = bridge;
 
@@ -107,7 +111,7 @@ exit 4
 
 // --- 1: pins are ALWAYS present ----------------------------------------------
 
-test("buildCodexArgs always carries the pinned model and reasoning-effort flags", () => {
+test("buildCodexArgs always carries the pinned model, reasoning-effort, and approval-policy flags", () => {
   const args = buildCodexArgs();
   assert.deepEqual(args, [
     "exec",
@@ -116,6 +120,7 @@ test("buildCodexArgs always carries the pinned model and reasoning-effort flags"
     "-s", PINNED_SANDBOX,
     "-m", PINNED_CODEX_MODEL,
     "-c", `${REASONING_EFFORT_CONFIG_KEY}=${PINNED_REASONING_EFFORT}`,
+    "-c", 'approval_policy="never"',
   ]);
   // The sandbox is pinned read-only: an advisory convergence must not let codex
   // write to the worktree it reviews (exec defaults to writable when -s is omitted).
@@ -133,6 +138,7 @@ test("buildCodexArgs always carries the pinned model and reasoning-effort flags"
   assert.equal(PINNED_REASONING_EFFORT, "max");
   assert.notEqual(PINNED_REASONING_EFFORT, "xhigh"); // guard against a silent regression back to the non-max tier
   assert.equal(REASONING_EFFORT_CONFIG_KEY, "model_reasoning_effort");
+  assert.equal(PINNED_APPROVAL_POLICY, "never");
 });
 
 test("buildCodexArgs always includes --strict-config so an unrecognized pinned key hard-fails (never silently ignored)", () => {
@@ -155,6 +161,7 @@ test("benign extraArgs are appended AFTER the pins (extraArgs follow, never disp
   assert.ok(mi >= 0 && args[mi + 1] === PINNED_CODEX_MODEL, "model pin present");
   const ci = args.indexOf("-c");
   assert.ok(ci >= 0 && args[ci + 1] === `${REASONING_EFFORT_CONFIG_KEY}=${PINNED_REASONING_EFFORT}`, "effort pin present");
+  assert.ok(args.includes('approval_policy="never"'), "approval-policy pin present");
   // a NON-pinned -c config (sandbox_permissions) is allowed, appended after the pins.
   assert.deepEqual(args.slice(-4), ["--cd", "/somewhere", "-c", "sandbox_permissions=[]"]);
 });
@@ -192,6 +199,67 @@ test("buildCodexArgs rejects a reasoning-effort (or model) override via -c/--con
     ["-c", "model=gpt-4"], // -c model= is also a model override
   ]) {
     assert.throws(() => buildCodexArgs({ extraArgs: extra }), /is pinned/, `should reject ${JSON.stringify(extra)}`);
+  }
+});
+
+const approvalConfigForms = [
+  (value) => ["-c", `approval_policy${value}`],
+  (value) => ["--config", `approval_policy${value}`],
+  (value) => [`--config=approval_policy${value}`],
+  (value) => [`-c=approval_policy${value}`],
+  (value) => [`-capproval_policy${value}`],
+];
+
+test("buildCodexArgs accepts a harmless approval_policy=never restatement in every -c/--config form", () => {
+  const values = [
+    "=never", "=\"never\"", "='never'",
+    "  =  never  ", "  =  \"never\"  ", "  =  'never'  ",
+  ];
+  for (const form of approvalConfigForms) {
+    for (const value of values) {
+      const extra = form(value);
+      const args = buildCodexArgs({ extraArgs: extra });
+      assert.deepEqual(args.slice(-extra.length), extra, `should accept ${JSON.stringify(extra)}`);
+      assert.deepEqual(args.slice(0, 10), [
+        "exec",
+        "--strict-config",
+        "--skip-git-repo-check",
+        "-s", PINNED_SANDBOX,
+        "-m", PINNED_CODEX_MODEL,
+        "-c", `${REASONING_EFFORT_CONFIG_KEY}=${PINNED_REASONING_EFFORT}`,
+        "-c",
+      ], `pins should lead ${JSON.stringify(extra)}`);
+      assert.equal(args[10], 'approval_policy="never"', `approval pin should lead ${JSON.stringify(extra)}`);
+    }
+  }
+});
+
+test("buildCodexArgs rejects every other approval_policy value in every -c/--config form", () => {
+  const values = ["=on-request", "=\"untrusted\"", "=on-failure", "=never2", "="];
+  for (const form of approvalConfigForms) {
+    for (const value of values) {
+      const extra = form(value);
+      assert.throws(
+        () => buildCodexArgs({ extraArgs: extra }),
+        /'approval_policy' is pinned/,
+        `should reject ${JSON.stringify(extra)}`,
+      );
+    }
+  }
+});
+
+test("buildCodexArgs rejects every CLI approval flag in every accepted value form", () => {
+  for (const extra of [
+    ["-a", "on-request"],
+    ["-a", "never"],
+    ["-a=on-request"],
+    ["-anever"],
+    ["--ask-for-approval", "on-request"],
+    ["--ask-for-approval", "never"],
+    ["--ask-for-approval=on-request"],
+    ["--approve-for-me"],
+  ]) {
+    assert.throws(() => buildCodexArgs({ extraArgs: extra }), /approval policy is pinned/, `should reject ${JSON.stringify(extra)}`);
   }
 });
 
@@ -259,24 +327,27 @@ test("runCodex threads the pinned model + effort to the codex subprocess (fake b
 
 // --- 4: resolved model + effort recorded with the captured verdict ----------
 
-test("runCodex records the resolved model + effort on the result object", () => {
+test("runCodex records the resolved model + effort + approval policy on the result object", () => {
   const dir = scratch();
   const bin = fakeCodex(dir, "assert-pins");
   const outputFile = path.join(dir, "verdict-meta.txt");
   const r = runCodex({ prompt: "converge", outputFile, bin });
   assert.equal(r.model, PINNED_CODEX_MODEL);
   assert.equal(r.reasoningEffort, PINNED_REASONING_EFFORT);
+  assert.equal(r.approvalPolicy, "never");
   assert.equal(r.outputFile, outputFile);
 });
 
-test("runCodex writes a header recording the resolved model + effort into the capture file (verdict is attributable)", () => {
+test("runCodex writes a first-line header recording the resolved model + effort + approval policy (verdict is attributable)", () => {
   const dir = scratch();
   const bin = fakeCodex(dir, "assert-pins");
   const outputFile = path.join(dir, "verdict-header.txt");
   runCodex({ prompt: "converge", outputFile, bin });
   const captured = fs.readFileSync(outputFile, "utf8");
-  assert.match(captured, new RegExp(`model=${PINNED_CODEX_MODEL}`));
-  assert.match(captured, new RegExp(`${REASONING_EFFORT_CONFIG_KEY}=${PINNED_REASONING_EFFORT}`));
+  const firstLine = captured.split("\n", 1)[0];
+  assert.match(firstLine, new RegExp(`model=${PINNED_CODEX_MODEL}`));
+  assert.match(firstLine, new RegExp(`${REASONING_EFFORT_CONFIG_KEY}=${PINNED_REASONING_EFFORT}`));
+  assert.match(firstLine, /approval_policy=never/);
   // the raw codex stdout still follows the header intact (capture-not-tail).
   assert.match(captured, /MERGE-SAFE: verdict from/);
 });
